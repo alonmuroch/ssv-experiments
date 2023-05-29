@@ -1,4 +1,6 @@
-package ssv
+package pipeline
+
+import "ssv-experiments/new_arch/ssv"
 
 type PipelineControlSymbols uint64
 
@@ -28,7 +30,7 @@ func isPipelineSymbol(s PipelineControlSymbols, objs ...interface{}) bool {
 
 // PipelineF is a function taking a runner and multiple objects to process a single action
 // Those functions suppose to be chained together to produce a whole working message process for a runner
-type PipelineF func(runner *Runner, objects ...interface{}) (error, []interface{})
+type PipelineF func(runner *ssv.Runner, objects ...interface{}) (error, []interface{})
 
 type Pipeline struct {
 	Items []PipelineF
@@ -38,7 +40,7 @@ func NewPipeline() *Pipeline {
 	return &Pipeline{Items: []PipelineF{}}
 }
 
-func (p *Pipeline) Run(runner *Runner, objects ...interface{}) (error, []interface{}) {
+func (p *Pipeline) Run(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
 	initObjs := objects
 	for _, f := range p.Items {
 		// check control symbols
@@ -68,9 +70,20 @@ func (p *Pipeline) Add(f PipelineF) *Pipeline {
 	return p
 }
 
+func (p *Pipeline) StopINoPreConsensusQuorum() *Pipeline {
+	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+		// TODO check pre-consensus quorum
+		if false {
+			return nil, []interface{}{Stop}
+		}
+		return nil, objects
+	})
+	return p
+}
+
 func (p *Pipeline) StopIfNotDecided() *Pipeline {
-	p.Items = append(p.Items, func(runner *Runner, objects ...interface{}) (error, []interface{}) {
-		if !runner.qbft.Decided() {
+	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+		if !runner.GetQBFT().Decided() {
 			return nil, []interface{}{Stop}
 		}
 		return nil, objects
@@ -83,6 +96,11 @@ func (p *Pipeline) AddIfConsensusMessage(f PipelineF) *Pipeline {
 	return p
 }
 
+func (p *Pipeline) AddIfPreConsensusMessage(f PipelineF) *Pipeline {
+	p.Items = append(p.Items, ContinueIfPreConsensusMessage(f))
+	return p
+}
+
 func (p *Pipeline) AddIfPostConsensusMessage(f PipelineF) *Pipeline {
 	p.Items = append(p.Items, ContinueIfPostConsensusMessage(f))
 	return p
@@ -90,7 +108,7 @@ func (p *Pipeline) AddIfPostConsensusMessage(f PipelineF) *Pipeline {
 
 // Pipepify turns a pipeline into a pipeline function to nest pipelines in pipelines
 func (p *Pipeline) Pipepify() PipelineF {
-	return func(runner *Runner, objects ...interface{}) (error, []interface{}) {
+	return func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
 		return p.Run(runner, objects)
 	}
 }

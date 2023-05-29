@@ -2,34 +2,35 @@ package ssv
 
 import (
 	"ssv-experiments/new_arch/p2p"
+	"ssv-experiments/new_arch/ssv/pipeline"
 	"ssv-experiments/new_arch/types"
 )
 
 func NewAttesterRunnerForDuty(duty *types.Duty) *Runner {
 	ret := StartAttesterRunner(NewRunner(duty))
 	ret.pipeline.
-		Add(DecodeMessage).
+		Add(pipeline.DecodeMessage).
 		AddIfConsensusMessage(
 			// consensus phase
-			NewPipeline().
-				Add(QBFTProcessMessage).
-				Add(ValidateDecidedValue(func(data *types.ConsensusData) error {
+			pipeline.NewPipeline().
+				Add(pipeline.QBFTProcessMessage).
+				Add(pipeline.ValidateDecidedValue(func(data *types.ConsensusData) error {
 					return nil
 				})).
-				Add(SignBeaconObject).
-				Add(ConstructPostConsensusMessage(types.PostConsensusPartialSig)).
-				Add(Broadcast(p2p.SSVPartialSignatureMsgType)).
+				Add(pipeline.SignBeaconObject).
+				Add(pipeline.ConstructPostConsensusMessage(types.PostConsensusPartialSig)).
+				Add(pipeline.Broadcast(p2p.SSVPartialSignatureMsgType)).
 				Pipepify(),
 		).
+		StopIfNotDecided().
 		AddIfPostConsensusMessage(
 			// post-consensus phase
-			NewPipeline().
-				StopIfNotDecided().
-				Add(ValidatePartialSignatureForSlot).
-				Add(VerifyExpectedRoots).
-				Add(AddPostConsensusMessage).
+			pipeline.NewPipeline().
+				Add(pipeline.ValidatePartialSignatureForSlot).
+				Add(pipeline.VerifyExpectedRoots).
+				Add(pipeline.AddPostConsensusMessage).
 				Add(OnQuorumReconstructAttestationData).
-				Add(BroadcastBeacon).
+				Add(pipeline.BroadcastBeacon).
 				Pipepify(),
 		)
 
@@ -42,34 +43,6 @@ func StartAttesterRunner(r *Runner) *Runner {
 	// start QBFT Instance
 
 	return r
-}
-
-// ProcessAttesterConsensus will process attester consensus messages, wait for quorum and broadcast a partial signature over the decided value
-func ProcessAttesterConsensus(runner *Runner, objects ...interface{}) (error, []interface{}) {
-	err, objs := QBFTProcessMessage(runner, objects)
-	if err != nil {
-		return err, nil
-	}
-
-	if IsSkipNext(objs) {
-		return nil, []interface{}{runner.qbft.DecidedValue}
-	}
-
-	if IsStop(objs) {
-		return nil, objs
-	}
-
-	err, objs = ValidateDecidedValue(func(data *types.ConsensusData) error {
-		return nil
-	})(runner, objs)
-	if err != nil {
-		return err, nil
-	}
-
-	// sign attestation data
-	// construct partial signature
-	// broadcast
-	return nil, []interface{}{}
 }
 
 // OnQuorumReconstructAttestationData checks quorum of post consensus msgs, reconstructs valid signed attestation and returns it. Otherwise stops
