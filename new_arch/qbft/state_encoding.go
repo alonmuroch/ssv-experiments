@@ -39,7 +39,7 @@ func (s *State) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 func (s *State) UnmarshalSSZ(buf []byte) error {
 	var err error
 	size := uint64(len(buf))
-	if size != 120 {
+	if size != 124 {
 		return ssz.ErrSize
 	}
 
@@ -47,22 +47,22 @@ func (s *State) UnmarshalSSZ(buf []byte) error {
 	if s.Share == nil {
 		s.Share = new(types.Share)
 	}
-	if err = s.Share.UnmarshalSSZ(buf[0:56]); err != nil {
+	if err = s.Share.UnmarshalSSZ(buf[0:60]); err != nil {
 		return err
 	}
 
 	// Field (1) 'Identifier'
-	copy(s.Identifier[:], buf[56:112])
+	copy(s.Identifier[:], buf[60:116])
 
 	// Field (2) 'Height'
-	s.Height = ssz.UnmarshallUint64(buf[112:120])
+	s.Height = ssz.UnmarshallUint64(buf[116:124])
 
 	return err
 }
 
 // SizeSSZ returns the ssz encoded size in bytes for the State object
 func (s *State) SizeSSZ() (size int) {
-	size = 120
+	size = 124
 	return
 }
 

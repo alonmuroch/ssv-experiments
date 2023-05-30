@@ -18,3 +18,8 @@ type PartialSignatureContainer struct {
 func (c *PartialSignatureContainer) Add(t PartialSignatureType, msg *types.SignedPartialSignatureMessages) {
 
 }
+
+// GetContainer returns container for type or empty slice
+func (c *PartialSignatureContainer) GetContainer(t PartialSignatureType) []*types.SignedPartialSignatureMessages {
+	panic("implement")
+}

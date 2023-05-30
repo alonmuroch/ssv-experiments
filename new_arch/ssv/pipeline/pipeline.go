@@ -1,32 +1,27 @@
 package pipeline
 
-import "ssv-experiments/new_arch/ssv"
+import (
+	"github.com/pkg/errors"
+	"ssv-experiments/new_arch/ssv"
+)
 
-type PipelineControlSymbols uint64
+type ControlSymbols uint64
 
 const (
 	// Stop means stop pipeline
-	Stop PipelineControlSymbols = iota
+	Stop ControlSymbols = iota
 	// SkipNext means skip the next pipeline element
 	SkipNext
+	// SkipToPhase skips to a specific phase. objects[0] control symbol, objects[1] next phase, objects[2:] objects to pass to next phase
+	SkipToPhase
 )
 
-func IsSkipNext(objs ...interface{}) bool {
-	return isPipelineSymbol(SkipNext, objs)
-}
-
-func IsStop(objs ...interface{}) bool {
-	return isPipelineSymbol(Stop, objs)
-}
-
-func isPipelineSymbol(s PipelineControlSymbols, objs ...interface{}) bool {
-	if len(objs) > 0 {
-		if c, isControlSymbol := objs[0].(PipelineControlSymbols); isControlSymbol && c == s {
-			return true
-		}
-	}
-	return false
-}
+const (
+	PreConsensusPhase  = "PreConsensusPhase"
+	ConsensusPhase     = "ConsensusPhase"
+	PostConsensusPhase = "PostConsensusPhase"
+	EndPhase           = "EndPhase"
+)
 
 // PipelineF is a function taking a runner and multiple objects to process a single action
 // Those functions suppose to be chained together to produce a whole working message process for a runner
@@ -34,23 +29,37 @@ type PipelineF func(runner *ssv.Runner, objects ...interface{}) (error, []interf
 
 type Pipeline struct {
 	Items []PipelineF
+	Phase map[string]int // maps phase name to index
 }
 
 func NewPipeline() *Pipeline {
-	return &Pipeline{Items: []PipelineF{}}
+	return &Pipeline{
+		Items: []PipelineF{},
+		Phase: map[string]int{},
+	}
 }
 
 func (p *Pipeline) Run(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
 	initObjs := objects
-	for _, f := range p.Items {
+	for i := range p.Items {
+		f := p.Items[i]
 		// check control symbols
 		if len(initObjs) > 0 {
-			if c, isControlSymbol := initObjs[0].(PipelineControlSymbols); isControlSymbol {
+			if c, isControlSymbol := initObjs[0].(ControlSymbols); isControlSymbol {
 				switch c {
 				case Stop:
 					return nil, []interface{}{}
 				case SkipNext:
 					continue
+				case SkipToPhase:
+					phaseName := initObjs[1].(string)
+					if val, found := p.Phase[phaseName]; found {
+						i = val // bump i to phase index
+						initObjs = initObjs[2:]
+						continue
+					} else {
+						return errors.New("phase not found"), []interface{}{}
+					}
 				}
 			}
 		}
@@ -67,6 +76,11 @@ func (p *Pipeline) Run(runner *ssv.Runner, objects ...interface{}) (error, []int
 
 func (p *Pipeline) Add(f PipelineF) *Pipeline {
 	p.Items = append(p.Items, f)
+	return p
+}
+
+func (p *Pipeline) MarkPhase(name string) *Pipeline {
+	p.Phase[name] = len(p.Items)
 	return p
 }
 
@@ -91,24 +105,63 @@ func (p *Pipeline) StopIfNotDecided() *Pipeline {
 	return p
 }
 
-func (p *Pipeline) AddIfConsensusMessage(f PipelineF) *Pipeline {
-	p.Items = append(p.Items, ContinueIfConsensusMessage(f))
+// StopIfNoPartialSigQuorum checks if msg container for type has quorum, if not stop
+func (p *Pipeline) StopIfNoPartialSigQuorum(t ssv.PartialSignatureType) *Pipeline {
+	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+		// get container by type from runner
+		// check quorum
+		if false { // no quorum
+			return nil, []interface{}{Stop}
+		}
+		return nil, objects
+	})
 	return p
 }
 
-func (p *Pipeline) AddIfPreConsensusMessage(f PipelineF) *Pipeline {
-	p.Items = append(p.Items, ContinueIfPreConsensusMessage(f))
+func (p *Pipeline) SkipIfNotConsensusMessage(nextPhase string) *Pipeline {
+	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+		// check if consensus message
+
+		if true { // consensus message
+			return nil, objects
+		}
+		return nil, append(
+			[]interface{}{
+				SkipToPhase,
+				nextPhase,
+			}, objects...)
+	})
 	return p
 }
 
-func (p *Pipeline) AddIfPostConsensusMessage(f PipelineF) *Pipeline {
-	p.Items = append(p.Items, ContinueIfPostConsensusMessage(f))
+func (p *Pipeline) SkipIfNotPreConsensusMessage(nextPhase string) *Pipeline {
+	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+		// check if pre consensus message
+
+		if true { // consensus message
+			return nil, objects
+		}
+		return nil, append(
+			[]interface{}{
+				SkipToPhase,
+				nextPhase,
+			}, objects...)
+	})
 	return p
 }
 
-// Pipepify turns a pipeline into a pipeline function to nest pipelines in pipelines
-func (p *Pipeline) Pipepify() PipelineF {
-	return func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
-		return p.Run(runner, objects)
-	}
+func (p *Pipeline) SkipIfNotPostConsensusMessage(nextPhase string) *Pipeline {
+	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+		// check if post consensus message
+
+		if true { // consensus message
+			return nil, objects
+		}
+		return nil, append(
+			[]interface{}{
+				SkipToPhase,
+				nextPhase,
+			}, objects...)
+	})
+	return p
 }
