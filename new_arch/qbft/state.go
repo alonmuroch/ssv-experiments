@@ -9,4 +9,6 @@ type State struct {
 	Share      *types.Share
 	Identifier p2p.Identifier `ssz-size:"56"` // instance Identifier this msg belongs to
 	Height     uint64
+
+	Messages Container
 }
