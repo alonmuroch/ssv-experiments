@@ -11,7 +11,8 @@ import (
 type ProposedValueCheckF[T IData] func(data T) error
 
 type IData interface {
-	ssz.Marshaler | ssz.HashRoot
+	ssz.Marshaler
+	ssz.HashRoot
 }
 
 type Instance[T IData] struct {
