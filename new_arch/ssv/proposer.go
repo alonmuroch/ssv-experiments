@@ -17,7 +17,7 @@ func NewProposerRunnerForDuty(duty *types.Duty) *Runner {
 		Add(pipeline.ValidatePartialSignatureForSlot).
 		Add(pipeline.VerifyExpectedRoots).
 		Add(pipeline.AddPostConsensusMessage).
-		StopIfNoPartialSigQuorum(PreConsensus).
+		StopIfNoPartialSigQuorum(types.RandaoPartialSig).
 		Add(ReconstructRandao).
 		Add(FetchProposedBlock).
 		Add(DecideOnBlock).
@@ -41,7 +41,7 @@ func NewProposerRunnerForDuty(duty *types.Duty) *Runner {
 		Add(pipeline.ValidatePartialSignatureForSlot).
 		Add(pipeline.VerifyExpectedRoots).
 		Add(pipeline.AddPostConsensusMessage).
-		StopIfNoPartialSigQuorum(PostConsensus).
+		StopIfNoPartialSigQuorum(types.PostConsensusPartialSig).
 		Add(ReconstructBlockData).
 		Add(pipeline.BroadcastBeacon).
 

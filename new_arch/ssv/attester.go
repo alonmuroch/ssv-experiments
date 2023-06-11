@@ -29,7 +29,7 @@ func NewAttesterRunnerForDuty(duty *types.Duty) *Runner {
 		Add(pipeline.ValidatePartialSignatureForSlot).
 		Add(pipeline.VerifyExpectedRoots).
 		Add(pipeline.AddPostConsensusMessage).
-		StopIfNoPartialSigQuorum(PostConsensus).
+		StopIfNoPartialSigQuorum(types.PostConsensusPartialSig).
 		Add(ReconstructAttestationData).
 		Add(pipeline.BroadcastBeacon).
 

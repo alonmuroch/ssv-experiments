@@ -3,6 +3,7 @@ package pipeline
 import (
 	"github.com/pkg/errors"
 	"ssv-experiments/new_arch/ssv"
+	"ssv-experiments/new_arch/types"
 )
 
 type ControlSymbols uint64
@@ -106,7 +107,7 @@ func (p *Pipeline) StopIfNotDecided() *Pipeline {
 }
 
 // StopIfNoPartialSigQuorum checks if msg container for type has quorum, if not stop
-func (p *Pipeline) StopIfNoPartialSigQuorum(t ssv.PartialSignatureType) *Pipeline {
+func (p *Pipeline) StopIfNoPartialSigQuorum(t types.PartialSigMsgType) *Pipeline {
 	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
 		// get container by type from runner
 		// check quorum
