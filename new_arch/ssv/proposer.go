@@ -6,8 +6,8 @@ import (
 	"ssv-experiments/new_arch/types"
 )
 
-func NewProposerRunnerForDuty(duty *types.Duty) *Runner {
-	ret := StartProposerRunner(NewRunner(duty))
+func NewProposerRunnerForDuty(config Config, duty *types.Duty) *Runner {
+	ret := StartProposerRunner(NewRunner(config, duty))
 	ret.pipeline.
 		Add(pipeline.DecodeMessage).
 
@@ -36,7 +36,7 @@ func NewProposerRunnerForDuty(duty *types.Duty) *Runner {
 
 		// ##### post consensus phase #####
 		MarkPhase(pipeline.PostConsensusPhase).
-		SkipIfNotConsensusMessage(pipeline.EndPhase).
+		StopIfNotPostConsensusMessage().
 		StopIfNotDecided().
 		Add(pipeline.ValidatePartialSignatureForSlot).
 		Add(pipeline.VerifyExpectedRoots).

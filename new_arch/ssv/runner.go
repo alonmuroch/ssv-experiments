@@ -9,23 +9,40 @@ import (
 
 // Runner executes a single duty. It receives a RunnerDuty
 type Runner struct {
-	State      State
-	Identifier p2p.Identifier
-	pipeline   *pipeline2.Pipeline
+	State State
+	// pipeline is the entire message process pipeline for any runner messages
+	pipeline *pipeline2.Pipeline
+	config   Config
 
+	// qbft holds the qbft instance for this runner.
+	// It is left outside the state as the state should change if and when decided (setting DecidedData), this is not strictly part of the runner's state
 	qbft *qbft.Instance
 }
 
-func NewRunner(duty *types.Duty) *Runner {
+func NewRunner(config Config, duty *types.Duty) *Runner {
 	return &Runner{
-		State:      NewState(duty),
-		Identifier: p2p.NewIdentifier(duty.Slot, duty.ValidatorPK, duty.Role),
-		pipeline:   pipeline2.NewPipeline(),
+		State:    NewState(duty),
+		config:   config,
+		pipeline: pipeline2.NewPipeline(),
 	}
 }
 
 func (r *Runner) GetQBFT() *qbft.Instance {
 	return r.qbft
+}
+
+func (r *Runner) GetConfig() *Config {
+	return &r.config
+}
+
+func (r *Runner) HasPreConsensusQuorum() bool {
+	all := r.State.PartialSignatures.AllPreConsensus()
+	return len(all) >= int(r.config.Share.Quorum)
+}
+
+func (r *Runner) HasPostConsensusQuorum() bool {
+	all := r.State.PartialSignatures.AllPostConsensus()
+	return len(all) >= int(r.config.Share.Quorum)
 }
 
 func (r *Runner) ProcessMessage(msg *p2p.Message) error {

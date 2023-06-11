@@ -6,8 +6,8 @@ import (
 	"ssv-experiments/new_arch/types"
 )
 
-func NewAttesterRunnerForDuty(duty *types.Duty) *Runner {
-	ret := StartAttesterRunner(NewRunner(duty))
+func NewAttesterRunnerForDuty(config Config, duty *types.Duty) *Runner {
+	ret := StartAttesterRunner(NewRunner(config, duty))
 	ret.pipeline.
 		Add(pipeline.DecodeMessage).
 
@@ -24,7 +24,7 @@ func NewAttesterRunnerForDuty(duty *types.Duty) *Runner {
 
 		// ##### post consensus phase #####
 		MarkPhase(pipeline.PostConsensusPhase).
-		SkipIfNotPostConsensusMessage(pipeline.EndPhase).
+		StopIfNotPostConsensusMessage().
 		StopIfNotDecided().
 		Add(pipeline.ValidatePartialSignatureForSlot).
 		Add(pipeline.VerifyExpectedRoots).

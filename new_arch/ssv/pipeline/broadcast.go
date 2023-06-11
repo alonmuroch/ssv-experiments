@@ -17,7 +17,7 @@ func Broadcast(t p2p.MsgType) func(runner *ssv.Runner, objects ...interface{}) (
 
 		msg := &p2p.Message{
 			MsgType: t,
-			MsgID:   runner.Identifier,
+			MsgID:   runner.GetConfig().Identifier,
 			Data:    byts,
 		}
 

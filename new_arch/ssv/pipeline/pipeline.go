@@ -40,6 +40,7 @@ func NewPipeline() *Pipeline {
 	}
 }
 
+// Run the pipeline
 func (p *Pipeline) Run(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
 	initObjs := objects
 	for i := range p.Items {
@@ -75,11 +76,13 @@ func (p *Pipeline) Run(runner *ssv.Runner, objects ...interface{}) (error, []int
 	return nil, initObjs
 }
 
+// Add a pipeline item
 func (p *Pipeline) Add(f PipelineF) *Pipeline {
 	p.Items = append(p.Items, f)
 	return p
 }
 
+// MarkPhase marks a phase by name in the pipeline that can be jumped to
 func (p *Pipeline) MarkPhase(name string) *Pipeline {
 	p.Phase[name] = len(p.Items)
 	return p
@@ -151,7 +154,8 @@ func (p *Pipeline) SkipIfNotPreConsensusMessage(nextPhase string) *Pipeline {
 	return p
 }
 
-func (p *Pipeline) SkipIfNotPostConsensusMessage(nextPhase string) *Pipeline {
+// StopIfNotPostConsensusMessage will stop the pipeline if message is not post consensus message
+func (p *Pipeline) StopIfNotPostConsensusMessage() *Pipeline {
 	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
 		// check if post consensus message
 
@@ -160,8 +164,7 @@ func (p *Pipeline) SkipIfNotPostConsensusMessage(nextPhase string) *Pipeline {
 		}
 		return nil, append(
 			[]interface{}{
-				SkipToPhase,
-				nextPhase,
+				Stop,
 			}, objects...)
 	})
 	return p
