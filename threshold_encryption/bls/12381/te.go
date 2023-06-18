@@ -68,7 +68,7 @@ func GetCipherText(msg []byte, pk *bls.PublicKey) (*CipherData, error) {
 	bls.G1Mul(Y, bls.CastFromPublicKey(pk), bls.CastFromSecretKey(r))
 
 	hash := hash(Y)
-	
+
 	_, _, V := padKeyAndData(hash[:], msg)
 
 	H, err := hashToGroup(V, U)
