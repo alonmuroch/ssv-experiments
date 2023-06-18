@@ -38,6 +38,7 @@ func (i *Instance) proposerForRound(round uint64) uint64 {
 	panic("implement")
 }
 
+// ProcessMessage processes the incoming message and returns an optional message to be broadcasted. Or error
 func (i *Instance) ProcessMessage(msg *SignedMessage) (*SignedMessage, error) {
 	if !bytes.Equal(msg.Message.Identifier[:], i.Identifier[:]) {
 		return nil, errors.New("invalid identifier")

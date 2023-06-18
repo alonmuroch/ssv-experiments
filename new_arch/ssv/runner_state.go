@@ -6,7 +6,7 @@ import (
 
 type State struct {
 	// PartialSignatures holds partial BLS signatures
-	PartialSignatures Container
+	PartialSignatures Container `ssz-max:"256"`
 
 	StartingDuty *types.Duty
 	DecidedData  *types.ConsensusData

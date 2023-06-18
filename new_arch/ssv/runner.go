@@ -45,6 +45,14 @@ func (r *Runner) HasPostConsensusQuorum() bool {
 	return len(all) >= int(r.config.Share.Quorum)
 }
 
+func (r *Runner) Finished() bool {
+	if r.State.DecidedData == nil {
+		return false
+	}
+
+	return r.HasPostConsensusQuorum()
+}
+
 func (r *Runner) ProcessMessage(msg *p2p.Message) error {
 	objsToPass := []interface{}{msg}
 	err, _ := r.pipeline.Run(r, objsToPass)
