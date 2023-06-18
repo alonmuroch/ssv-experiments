@@ -26,18 +26,26 @@ func NewInstance(data *InputData, share *types.Share, height, role uint64) *Inst
 	}
 }
 
-func (i *Instance[T]) StartForSlot(slot uint64) {
-
+// Start will start the instance and return the messages to broadcast
+func (i *Instance) Start() (*SignedMessage, error) {
+	if i.proposerForRound(i.State.Round) == i.Share.OperatorID {
+		return i.createProposal()
+	}
+	return nil, nil
 }
 
-func (i *Instance[T]) ProcessMessage(msg *SignedMessage) error {
+func (i *Instance) proposerForRound(round uint64) uint64 {
+	panic("implement")
+}
+
+func (i *Instance) ProcessMessage(msg *SignedMessage) (*SignedMessage, error) {
 	if !bytes.Equal(msg.Message.Identifier[:], i.Identifier[:]) {
-		return errors.New("invalid identifier")
+		return nil, errors.New("invalid identifier")
 	}
 	// TODO process
-	return nil
+	return nil, nil
 }
 
-func (i *Instance[T]) Decided() bool {
+func (i *Instance) Decided() bool {
 	panic("implement")
 }
