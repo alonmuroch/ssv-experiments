@@ -49,8 +49,16 @@ func QBFTProcessMessage(runner *ssv.Runner, objects ...interface{}) (error, []in
 		prevDecided = true
 	}
 
-	if err := runner.GetQBFT().ProcessMessage(objects[0].(*qbft.SignedMessage)); err != nil {
+	msgToBroadcast, err := runner.GetQBFT().ProcessMessage(objects[0].(*qbft.SignedMessage))
+	if err != nil {
 		return err, nil
+	}
+
+	if msgToBroadcast != nil {
+		err, _ := Broadcast(p2p.SSVConsensusMsgType)(runner, msgToBroadcast)
+		if err != nil {
+			return err, nil
+		}
 	}
 
 	if !runner.GetQBFT().Decided() || prevDecided {
