@@ -1,7 +1,7 @@
 package types
 
 //go:generate rm -f ./consensus_data_encoding.go
-//go:generate go run github.com/ferranbt/fastssz/sszgen --path consensus_data.go --include ./duty.go
+//go:generate go run github.com/ferranbt/fastssz/sszgen --path consensus_data.go --include ./duty.go,./partial_signature_message.go
 
 //go:generate rm -f ./share_encoding.go
 //go:generate go run github.com/ferranbt/fastssz/sszgen --path share.go

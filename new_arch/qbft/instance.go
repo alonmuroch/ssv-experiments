@@ -2,37 +2,27 @@ package qbft
 
 import (
 	"bytes"
-	ssz "github.com/ferranbt/fastssz"
 	"github.com/pkg/errors"
 	"ssv-experiments/new_arch/p2p"
 	"ssv-experiments/new_arch/types"
 )
 
-type ProposedValueCheckF[T IData] func(data T) error
-
-type IData interface {
-	ssz.Marshaler
-	ssz.HashRoot
-}
-
-type Instance[T IData] struct {
+type Instance struct {
 	State        State
-	StartValue   T
-	DecidedValue T
-
-	valueCheckF ProposedValueCheckF[T]
+	Share        *types.Share
+	Identifier   p2p.Identifier `ssz-size:"56"` // instance Identifier this msg belongs to
+	StartValue   InputData
+	DecidedValue *InputData
 }
 
-func NewInstance[T IData](data T, valueCheckF ProposedValueCheckF[T], share *types.Share, slot, role uint64) *Instance[T] {
-	return &Instance[T]{
+func NewInstance(data *InputData, share *types.Share, height, role uint64) *Instance {
+	return &Instance{
 		State: State{
-			Share:      share,
-			Identifier: p2p.NewIdentifier(slot, share.ValidatorPubKey, role),
-			Height:     slot,
+			Height: height,
 		},
-		StartValue: data,
-
-		valueCheckF: valueCheckF,
+		Share:      share,
+		Identifier: p2p.NewIdentifier(height, share.ValidatorPubKey, role),
+		StartValue: *data,
 	}
 }
 
@@ -41,7 +31,7 @@ func (i *Instance[T]) StartForSlot(slot uint64) {
 }
 
 func (i *Instance[T]) ProcessMessage(msg *SignedMessage) error {
-	if !bytes.Equal(msg.Message.Identifier[:], i.State.Identifier[:]) {
+	if !bytes.Equal(msg.Message.Identifier[:], i.Identifier[:]) {
 		return errors.New("invalid identifier")
 	}
 	// TODO process
