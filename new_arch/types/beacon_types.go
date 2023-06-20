@@ -15,3 +15,9 @@ var (
 
 	DomainError = [4]byte{0x99, 0x99, 0x99, 0x99}
 )
+
+const (
+	BeaconRoleAttester = iota
+	BeaconRoleAggregator
+	BeaconRoleProposer
+)

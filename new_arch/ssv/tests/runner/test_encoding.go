@@ -34,7 +34,7 @@ func (s *SpecTest) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 	}
 	offset += s.Post.SizeSSZ()
 
-	// Field (2) 'Share'
+	// Field (2) 'share'
 	if s.Share == nil {
 		s.Share = new(types.Share)
 	}
@@ -113,7 +113,7 @@ func (s *SpecTest) UnmarshalSSZ(buf []byte) error {
 		return ssz.ErrOffset
 	}
 
-	// Field (2) 'Share'
+	// Field (2) 'share'
 	if s.Share == nil {
 		s.Share = new(types.Share)
 	}
@@ -224,7 +224,7 @@ func (s *SpecTest) HashTreeRootWith(hh ssz.HashWalker) (err error) {
 		return
 	}
 
-	// Field (2) 'Share'
+	// Field (2) 'share'
 	if s.Share == nil {
 		s.Share = new(types.Share)
 	}

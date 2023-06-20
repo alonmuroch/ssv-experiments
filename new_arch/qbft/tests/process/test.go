@@ -4,14 +4,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"ssv-experiments/new_arch/qbft"
 	"ssv-experiments/new_arch/spec_test"
-	"ssv-experiments/new_arch/types"
 	"testing"
 )
 
 type SpecTest struct {
-	Pre      *qbft.State
-	Post     *qbft.State
-	Share    *types.Share
+	Pre      *qbft.Instance
+	Post     *qbft.Instance
 	Messages []*qbft.SignedMessage `ssz-max:"256"`
 
 	instance *qbft.Instance
@@ -22,12 +20,6 @@ func (test *SpecTest) Init(testSSZ []byte) (spec_test.TestObject, error) {
 	if err := test.UnmarshalSSZ(testSSZ); err != nil {
 		return nil, err
 	}
-
-	test.instance = &qbft.Instance{
-		State: *test.Pre,
-		Share: test.Share,
-	}
-
 	return test.Post, nil
 }
 
