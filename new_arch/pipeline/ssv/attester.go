@@ -8,27 +8,27 @@ import (
 )
 
 func NewAttesterPipeline(runner *ssv.Runner) *pipeline.Pipeline {
-	return pipeline.NewPipeline(runner).
-		Add(pipeline.DecodeMessage).
+	return NewPipeline(runner).
+		Add(DecodeMessage).
 
 		// ##### consensus phase #####
 		MarkPhase(pipeline.ConsensusPhase).
 		SkipIfNotConsensusMessage(pipeline.PostConsensusPhase).
-		Add(pipeline.QBFTProcessMessage).
-		Add(pipeline.ValidateDecidedValue(func(data *types.ConsensusData) error {
+		Add(QBFTProcessMessage).
+		Add(ValidateDecidedValue(func(data *types.ConsensusData) error {
 			return nil
 		})).
-		Add(pipeline.SignBeaconObject).
-		Add(pipeline.ConstructPostConsensusMessage(types.PostConsensusPartialSig)).
+		Add(SignBeaconObject).
+		Add(ConstructPostConsensusMessage(types.PostConsensusPartialSig)).
 		Add(pipeline.Broadcast(p2p.SSVPartialSignatureMsgType)).
 
 		// ##### post consensus phase #####
 		MarkPhase(pipeline.PostConsensusPhase).
 		StopIfNotPostConsensusMessage().
 		StopIfNotDecided().
-		Add(pipeline.ValidatePartialSignatureForSlot).
-		Add(pipeline.VerifyExpectedRoots).
-		Add(pipeline.AddPostConsensusMessage).
+		Add(ValidatePartialSignatureForSlot).
+		Add(VerifyExpectedRoots).
+		Add(AddPostConsensusMessage).
 		StopIfNoPartialSigQuorum(types.PostConsensusPartialSig).
 		Add(ReconstructAttestationData).
 		Add(pipeline.BroadcastBeacon).

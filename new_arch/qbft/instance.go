@@ -29,7 +29,7 @@ func NewInstance(data *InputData, share *types.Share, height, role uint64) *Inst
 // Start will start the instance and return the messages to broadcast
 func (i *Instance) Start() (*SignedMessage, error) {
 	if i.proposerForRound(i.State.Round) == i.Share.OperatorID {
-		return i.createProposal()
+		return i.CreateProposalMessage()
 	}
 	return nil, nil
 }

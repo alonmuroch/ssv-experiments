@@ -1,5 +1,9 @@
 package qbft
 
-func (i *Instance) createProposal() (*SignedMessage, error) {
+func (i *Instance) UponProposal(msg *SignedMessage) error {
+	panic("implement")
+}
+
+func (i *Instance) CreateProposalMessage() (*SignedMessage, error) {
 	panic("implement")
 }

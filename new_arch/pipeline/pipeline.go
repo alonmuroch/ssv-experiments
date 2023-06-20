@@ -3,6 +3,7 @@ package pipeline
 import (
 	"github.com/pkg/errors"
 	"ssv-experiments/new_arch/p2p"
+	"ssv-experiments/new_arch/qbft"
 	"ssv-experiments/new_arch/ssv"
 	"ssv-experiments/new_arch/types"
 )
@@ -30,16 +31,10 @@ const (
 type PipelineF func(pipeline *Pipeline, objects ...interface{}) (error, []interface{})
 
 type Pipeline struct {
-	Runner *ssv.Runner
-	Items  []PipelineF
-	Phase  map[string]int // maps phase name to index
-}
-
-func NewPipeline(runner *ssv.Runner) *Pipeline {
-	return &Pipeline{
-		Items: []PipelineF{},
-		Phase: map[string]int{},
-	}
+	Runner   *ssv.Runner
+	Instance *qbft.Instance
+	Items    []PipelineF
+	Phase    map[string]int // maps phase name to index
 }
 
 // ProcessMessage inputs a P2P message and passes it through the pipeline
