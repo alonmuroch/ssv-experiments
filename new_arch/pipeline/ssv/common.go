@@ -1,11 +1,18 @@
 package ssv
 
 import (
-	"github.com/pkg/errors"
 	"ssv-experiments/new_arch/p2p"
 	"ssv-experiments/new_arch/pipeline"
+	qbft2 "ssv-experiments/new_arch/pipeline/qbft"
 	"ssv-experiments/new_arch/qbft"
 	"ssv-experiments/new_arch/types"
+)
+
+const (
+	PreConsensusPhase  = "PreConsensusPhase"
+	ConsensusPhase     = "ConsensusPhase"
+	PostConsensusPhase = "PostConsensusPhase"
+	EndPhase           = "EndPhase"
 )
 
 // ValidateDecidedValue returns a pipeline function for a specific value check function
@@ -45,11 +52,12 @@ func SignBeaconObject(pipeline *pipeline.Pipeline, objects ...interface{}) (erro
 // - Stop if no quorum or previously decided
 func QBFTProcessMessage(p *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
 	prevDecided := false
-	if p.Runner.GetQBFT().Decided() {
+	if p.Instance.Decided() {
 		prevDecided = true
 	}
 
-	msgToBroadcast, err := p.Runner.GetQBFT().ProcessMessage(objects[0].(*qbft.SignedMessage))
+	qbftPipeline := qbft2.NewQBFTPipeline(p.Instance)
+	err, msgToBroadcast := qbftPipeline.ProcessMessage(objects[0].(*qbft.SignedMessage))
 	if err != nil {
 		return err, nil
 	}
@@ -61,32 +69,11 @@ func QBFTProcessMessage(p *pipeline.Pipeline, objects ...interface{}) (error, []
 		}
 	}
 
-	if !p.Runner.GetQBFT().Decided() || prevDecided {
+	if !p.Instance.Decided() || prevDecided {
 		return nil, []interface{}{pipeline.Stop}
 	}
 
-	return nil, []interface{}{p.Runner.GetQBFT().DecidedValue}
-}
-
-// DecodeMessage decodes a P2P message, error if can't
-func DecodeMessage(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
-	msg := objects[0].(*p2p.Message)
-	switch msg.MsgType {
-	case p2p.SSVPartialSignatureMsgType:
-		signedMsg := &types.SignedPartialSignatureMessages{}
-		if err := signedMsg.UnmarshalSSZ(msg.Data); err != nil {
-			return errors.Wrap(err, "could not get partial signature Message from network Message"), nil
-		}
-		return nil, []interface{}{signedMsg}
-	case p2p.SSVConsensusMsgType:
-		signedMsg := &qbft.SignedMessage{}
-		if err := signedMsg.UnmarshalSSZ(msg.Data); err != nil {
-			return errors.Wrap(err, "could not get consensus Message from network Message"), nil
-		}
-		return nil, []interface{}{signedMsg}
-	default:
-		return errors.New("unsupported message type"), nil
-	}
+	return nil, []interface{}{p.Instance.DecidedValue}
 }
 
 // AddPostConsensusMessage adds post consensus msg to container

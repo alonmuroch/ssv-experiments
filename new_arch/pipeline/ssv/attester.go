@@ -9,11 +9,11 @@ import (
 
 func NewAttesterPipeline(runner *ssv.Runner) *pipeline.Pipeline {
 	return NewPipeline(runner).
-		Add(DecodeMessage).
+		Add(pipeline.DecodeMessage).
 
 		// ##### consensus phase #####
-		MarkPhase(pipeline.ConsensusPhase).
-		SkipIfNotConsensusMessage(pipeline.PostConsensusPhase).
+		MarkPhase(ConsensusPhase).
+		SkipIfNotConsensusMessage(PostConsensusPhase).
 		Add(QBFTProcessMessage).
 		Add(ValidateDecidedValue(func(data *types.ConsensusData) error {
 			return nil
@@ -23,7 +23,7 @@ func NewAttesterPipeline(runner *ssv.Runner) *pipeline.Pipeline {
 		Add(pipeline.Broadcast(p2p.SSVPartialSignatureMsgType)).
 
 		// ##### post consensus phase #####
-		MarkPhase(pipeline.PostConsensusPhase).
+		MarkPhase(PostConsensusPhase).
 		StopIfNotPostConsensusMessage().
 		StopIfNotDecided().
 		Add(ValidatePartialSignatureForSlot).
@@ -34,7 +34,7 @@ func NewAttesterPipeline(runner *ssv.Runner) *pipeline.Pipeline {
 		Add(pipeline.BroadcastBeacon).
 
 		// ##### end phase #####
-		MarkPhase(pipeline.EndPhase)
+		MarkPhase(EndPhase)
 }
 
 // ReconstructAttestationData reconstructs valid signed attestation and returns it

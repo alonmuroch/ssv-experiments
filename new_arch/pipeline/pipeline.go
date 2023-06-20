@@ -2,7 +2,6 @@ package pipeline
 
 import (
 	"github.com/pkg/errors"
-	"ssv-experiments/new_arch/p2p"
 	"ssv-experiments/new_arch/qbft"
 	"ssv-experiments/new_arch/ssv"
 	"ssv-experiments/new_arch/types"
@@ -19,13 +18,6 @@ const (
 	SkipToPhase
 )
 
-const (
-	PreConsensusPhase  = "PreConsensusPhase"
-	ConsensusPhase     = "ConsensusPhase"
-	PostConsensusPhase = "PostConsensusPhase"
-	EndPhase           = "EndPhase"
-)
-
 // PipelineF is a function taking a runner and multiple objects to process a single action
 // Those functions suppose to be chained together to produce a whole working message process for a runner
 type PipelineF func(pipeline *Pipeline, objects ...interface{}) (error, []interface{})
@@ -38,7 +30,7 @@ type Pipeline struct {
 }
 
 // ProcessMessage inputs a P2P message and passes it through the pipeline
-func (p *Pipeline) ProcessMessage(msg *p2p.Message) (error, []interface{}) {
+func (p *Pipeline) ProcessMessage(msg interface{}) (error, []interface{}) {
 	initObjs := []interface{}{msg}
 	for i := range p.Items {
 		f := p.Items[i]
@@ -98,7 +90,7 @@ func (p *Pipeline) StopINoPreConsensusQuorum() *Pipeline {
 
 func (p *Pipeline) StopIfNotDecided() *Pipeline {
 	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
-		if !pipeline.Runner.GetQBFT().Decided() {
+		if !pipeline.Instance.Decided() {
 			return nil, []interface{}{Stop}
 		}
 		return nil, objects
@@ -124,6 +116,29 @@ func (p *Pipeline) SkipIfNotConsensusMessage(nextPhase string) *Pipeline {
 		// check if consensus message
 
 		if true { // consensus message
+			return nil, objects
+		}
+		return nil, append(
+			[]interface{}{
+				SkipToPhase,
+				nextPhase,
+			}, objects...)
+	})
+	return p
+}
+
+func (p *Pipeline) SkipIfNotQBFTMessageType(nextPhase string, msgType uint64) *Pipeline {
+	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
+		msg, ok := objects[0].(*qbft.SignedMessage)
+		if !ok {
+			return nil, append(
+				[]interface{}{
+					SkipToPhase,
+					nextPhase,
+				}, objects...)
+		}
+
+		if msg.Message.MsgType == msgType {
 			return nil, objects
 		}
 		return nil, append(

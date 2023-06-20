@@ -2,6 +2,13 @@ package qbft
 
 import "ssv-experiments/new_arch/p2p"
 
+const (
+	ProposalMessageType = iota
+	PrepareMessageType
+	CommitMessageType
+	RoundChangeMessageType
+)
+
 type Message struct {
 	MsgType    uint64
 	Round      uint64         // QBFT round for which the msg is for

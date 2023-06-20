@@ -9,11 +9,11 @@ import (
 
 func NewProposerRunnerForDuty(runner *ssv.Runner) *pipeline.Pipeline {
 	return NewPipeline(runner).
-		Add(DecodeMessage).
+		Add(pipeline.DecodeMessage).
 
 		// ##### pre consensus phase #####
-		MarkPhase(pipeline.PreConsensusPhase).
-		SkipIfNotPreConsensusMessage(pipeline.ConsensusPhase).
+		MarkPhase(PreConsensusPhase).
+		SkipIfNotPreConsensusMessage(ConsensusPhase).
 		Add(ValidatePartialSignatureForSlot).
 		Add(VerifyExpectedRoots).
 		Add(AddPostConsensusMessage).
@@ -23,8 +23,8 @@ func NewProposerRunnerForDuty(runner *ssv.Runner) *pipeline.Pipeline {
 		Add(DecideOnBlock).
 
 		// ##### consensus phase #####
-		MarkPhase(pipeline.ConsensusPhase).
-		SkipIfNotConsensusMessage(pipeline.PostConsensusPhase).
+		MarkPhase(ConsensusPhase).
+		SkipIfNotConsensusMessage(PostConsensusPhase).
 		StopINoPreConsensusQuorum().
 		Add(QBFTProcessMessage).
 		Add(ValidateDecidedValue(func(data *types.ConsensusData) error {
@@ -35,7 +35,7 @@ func NewProposerRunnerForDuty(runner *ssv.Runner) *pipeline.Pipeline {
 		Add(pipeline.Broadcast(p2p.SSVPartialSignatureMsgType)).
 
 		// ##### post consensus phase #####
-		MarkPhase(pipeline.PostConsensusPhase).
+		MarkPhase(PostConsensusPhase).
 		StopIfNotPostConsensusMessage().
 		StopIfNotDecided().
 		Add(ValidatePartialSignatureForSlot).
@@ -46,7 +46,7 @@ func NewProposerRunnerForDuty(runner *ssv.Runner) *pipeline.Pipeline {
 		Add(pipeline.BroadcastBeacon).
 
 		// ##### end phase #####
-		MarkPhase(pipeline.EndPhase)
+		MarkPhase(EndPhase)
 }
 
 // ReconstructBlockData reconstructs valid signed block and returns it.

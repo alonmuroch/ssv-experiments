@@ -2,7 +2,6 @@ package ssv
 
 import (
 	"ssv-experiments/new_arch/p2p"
-	"ssv-experiments/new_arch/qbft"
 	"ssv-experiments/new_arch/types"
 )
 
@@ -13,10 +12,6 @@ type Runner struct {
 	Share *types.Share
 	// identifier identifies this particular runner
 	Identifier p2p.Identifier `ssz-size:"56"`
-
-	// qbft holds the qbft instance for this runner.
-	// It is left outside the state as the state should change if and when decided (setting DecidedData), this is not strictly part of the runner's state
-	qbft *qbft.Instance
 }
 
 func NewRunner(share *types.Share, duty *types.Duty) *Runner {
@@ -25,10 +20,6 @@ func NewRunner(share *types.Share, duty *types.Duty) *Runner {
 		Share:      share,
 		Identifier: p2p.NewIdentifier(duty.Slot, share.ValidatorPubKey, duty.Role),
 	}
-}
-
-func (r *Runner) GetQBFT() *qbft.Instance {
-	return r.qbft
 }
 
 func (r *Runner) HasPreConsensusQuorum() bool {
