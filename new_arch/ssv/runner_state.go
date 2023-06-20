@@ -12,8 +12,8 @@ type State struct {
 	DecidedData  *types.ConsensusData
 }
 
-func NewState(duty *types.Duty) State {
-	return State{
+func NewState(duty *types.Duty) *State {
+	return &State{
 		StartingDuty: duty,
 	}
 }

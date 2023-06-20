@@ -5,7 +5,6 @@ package qbft
 
 import (
 	ssz "github.com/ferranbt/fastssz"
-	"ssv-experiments/new_arch/p2p"
 )
 
 // MarshalSSZ ssz marshals the Message object

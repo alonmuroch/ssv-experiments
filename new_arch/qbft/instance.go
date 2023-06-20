@@ -8,21 +8,21 @@ import (
 )
 
 type Instance struct {
-	State        State
+	State        *State
 	Share        *types.Share
-	Identifier   p2p.Identifier `ssz-size:"56"` // instance Identifier this msg belongs to
-	StartValue   InputData
+	Identifier   p2p.Identifier `ssz-size:"56"`
+	StartValue   *InputData
 	DecidedValue *InputData
 }
 
 func NewInstance(data *InputData, share *types.Share, height, role uint64) *Instance {
 	return &Instance{
-		State: State{
+		State: &State{
 			Height: height,
 		},
 		Share:      share,
 		Identifier: p2p.NewIdentifier(height, share.ValidatorPubKey, role),
-		StartValue: *data,
+		StartValue: data,
 	}
 }
 

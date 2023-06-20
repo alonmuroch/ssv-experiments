@@ -2,13 +2,13 @@ package ssv
 
 import (
 	"ssv-experiments/new_arch/p2p"
-	"ssv-experiments/new_arch/ssv/pipeline"
+	"ssv-experiments/new_arch/pipeline"
+	"ssv-experiments/new_arch/ssv"
 	"ssv-experiments/new_arch/types"
 )
 
-func NewAttesterRunnerForDuty(config Config, duty *types.Duty) *Runner {
-	ret := StartAttesterRunner(NewRunner(config, duty))
-	ret.pipeline.
+func NewAttesterPipeline(runner *ssv.Runner) *pipeline.Pipeline {
+	return pipeline.NewPipeline(runner).
 		Add(pipeline.DecodeMessage).
 
 		// ##### consensus phase #####
@@ -35,20 +35,10 @@ func NewAttesterRunnerForDuty(config Config, duty *types.Duty) *Runner {
 
 		// ##### end phase #####
 		MarkPhase(pipeline.EndPhase)
-
-	return ret
-}
-
-func StartAttesterRunner(r *Runner) *Runner {
-	// Get attestation data
-	// construct consensus data
-	// start QBFT Instance
-
-	return r
 }
 
 // ReconstructAttestationData reconstructs valid signed attestation and returns it
-func ReconstructAttestationData(runner *Runner, objects ...interface{}) (error, []interface{}) {
+func ReconstructAttestationData(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
 	// if no post consensus quorum, return stop
 
 	// iterate all roots, reconstruct signature and return

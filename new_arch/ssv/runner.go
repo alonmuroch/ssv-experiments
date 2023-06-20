@@ -3,27 +3,27 @@ package ssv
 import (
 	"ssv-experiments/new_arch/p2p"
 	"ssv-experiments/new_arch/qbft"
-	pipeline2 "ssv-experiments/new_arch/ssv/pipeline"
 	"ssv-experiments/new_arch/types"
 )
 
 // Runner executes a single duty. It receives a RunnerDuty
 type Runner struct {
-	State State
-	// pipeline is the entire message process pipeline for any runner messages
-	pipeline *pipeline2.Pipeline
-	config   Config
+	State *State
+	// share is the share for the runner with which messages are verified and signed
+	Share *types.Share
+	// identifier identifies this particular runner
+	Identifier p2p.Identifier `ssz-size:"56"`
 
 	// qbft holds the qbft instance for this runner.
 	// It is left outside the state as the state should change if and when decided (setting DecidedData), this is not strictly part of the runner's state
 	qbft *qbft.Instance
 }
 
-func NewRunner(config Config, duty *types.Duty) *Runner {
+func NewRunner(share *types.Share, duty *types.Duty) *Runner {
 	return &Runner{
-		State:    NewState(duty),
-		config:   config,
-		pipeline: pipeline2.NewPipeline(),
+		State:      NewState(duty),
+		Share:      share,
+		Identifier: p2p.NewIdentifier(duty.Slot, share.ValidatorPubKey, duty.Role),
 	}
 }
 
@@ -31,18 +31,14 @@ func (r *Runner) GetQBFT() *qbft.Instance {
 	return r.qbft
 }
 
-func (r *Runner) GetConfig() *Config {
-	return &r.config
-}
-
 func (r *Runner) HasPreConsensusQuorum() bool {
 	all := r.State.PartialSignatures.AllPreConsensus()
-	return len(all) >= int(r.config.Share.Quorum)
+	return len(all) >= int(r.Share.Quorum)
 }
 
 func (r *Runner) HasPostConsensusQuorum() bool {
 	all := r.State.PartialSignatures.AllPostConsensus()
-	return len(all) >= int(r.config.Share.Quorum)
+	return len(all) >= int(r.Share.Quorum)
 }
 
 func (r *Runner) Finished() bool {
@@ -51,10 +47,4 @@ func (r *Runner) Finished() bool {
 	}
 
 	return r.HasPostConsensusQuorum()
-}
-
-func (r *Runner) ProcessMessage(msg *p2p.Message) error {
-	objsToPass := []interface{}{msg}
-	err, _ := r.pipeline.Run(r, objsToPass)
-	return err
 }

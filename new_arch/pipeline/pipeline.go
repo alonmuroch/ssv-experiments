@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"github.com/pkg/errors"
+	"ssv-experiments/new_arch/p2p"
 	"ssv-experiments/new_arch/ssv"
 	"ssv-experiments/new_arch/types"
 )
@@ -26,23 +27,24 @@ const (
 
 // PipelineF is a function taking a runner and multiple objects to process a single action
 // Those functions suppose to be chained together to produce a whole working message process for a runner
-type PipelineF func(runner *ssv.Runner, objects ...interface{}) (error, []interface{})
+type PipelineF func(pipeline *Pipeline, objects ...interface{}) (error, []interface{})
 
 type Pipeline struct {
-	Items []PipelineF
-	Phase map[string]int // maps phase name to index
+	Runner *ssv.Runner
+	Items  []PipelineF
+	Phase  map[string]int // maps phase name to index
 }
 
-func NewPipeline() *Pipeline {
+func NewPipeline(runner *ssv.Runner) *Pipeline {
 	return &Pipeline{
 		Items: []PipelineF{},
 		Phase: map[string]int{},
 	}
 }
 
-// Run the pipeline
-func (p *Pipeline) Run(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
-	initObjs := objects
+// ProcessMessage inputs a P2P message and passes it through the pipeline
+func (p *Pipeline) ProcessMessage(msg *p2p.Message) (error, []interface{}) {
+	initObjs := []interface{}{msg}
 	for i := range p.Items {
 		f := p.Items[i]
 		// check control symbols
@@ -67,7 +69,7 @@ func (p *Pipeline) Run(runner *ssv.Runner, objects ...interface{}) (error, []int
 		}
 
 		// execute
-		err, objs := f(runner, initObjs)
+		err, objs := f(p, initObjs)
 		if err != nil {
 			return err, []interface{}{}
 		}
@@ -89,7 +91,7 @@ func (p *Pipeline) MarkPhase(name string) *Pipeline {
 }
 
 func (p *Pipeline) StopINoPreConsensusQuorum() *Pipeline {
-	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 		// TODO check pre-consensus quorum
 		if false {
 			return nil, []interface{}{Stop}
@@ -100,8 +102,8 @@ func (p *Pipeline) StopINoPreConsensusQuorum() *Pipeline {
 }
 
 func (p *Pipeline) StopIfNotDecided() *Pipeline {
-	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
-		if !runner.GetQBFT().Decided() {
+	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
+		if !pipeline.Runner.GetQBFT().Decided() {
 			return nil, []interface{}{Stop}
 		}
 		return nil, objects
@@ -111,7 +113,7 @@ func (p *Pipeline) StopIfNotDecided() *Pipeline {
 
 // StopIfNoPartialSigQuorum checks if msg container for type has quorum, if not stop
 func (p *Pipeline) StopIfNoPartialSigQuorum(t types.PartialSigMsgType) *Pipeline {
-	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 		// get container by type from runner
 		// check quorum
 		if false { // no quorum
@@ -123,7 +125,7 @@ func (p *Pipeline) StopIfNoPartialSigQuorum(t types.PartialSigMsgType) *Pipeline
 }
 
 func (p *Pipeline) SkipIfNotConsensusMessage(nextPhase string) *Pipeline {
-	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 		// check if consensus message
 
 		if true { // consensus message
@@ -139,7 +141,7 @@ func (p *Pipeline) SkipIfNotConsensusMessage(nextPhase string) *Pipeline {
 }
 
 func (p *Pipeline) SkipIfNotPreConsensusMessage(nextPhase string) *Pipeline {
-	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 		// check if pre consensus message
 
 		if true { // consensus message
@@ -156,7 +158,7 @@ func (p *Pipeline) SkipIfNotPreConsensusMessage(nextPhase string) *Pipeline {
 
 // StopIfNotPostConsensusMessage will stop the pipeline if message is not post consensus message
 func (p *Pipeline) StopIfNotPostConsensusMessage() *Pipeline {
-	p.Items = append(p.Items, func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 		// check if post consensus message
 
 		if true { // consensus message

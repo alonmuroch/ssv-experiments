@@ -2,13 +2,13 @@ package ssv
 
 import (
 	"ssv-experiments/new_arch/p2p"
-	"ssv-experiments/new_arch/ssv/pipeline"
+	"ssv-experiments/new_arch/pipeline"
+	"ssv-experiments/new_arch/ssv"
 	"ssv-experiments/new_arch/types"
 )
 
-func NewProposerRunnerForDuty(config Config, duty *types.Duty) *Runner {
-	ret := StartProposerRunner(NewRunner(config, duty))
-	ret.pipeline.
+func NewProposerRunnerForDuty(runner *ssv.Runner) *pipeline.Pipeline {
+	return pipeline.NewPipeline(runner).
 		Add(pipeline.DecodeMessage).
 
 		// ##### pre consensus phase #####
@@ -22,7 +22,7 @@ func NewProposerRunnerForDuty(config Config, duty *types.Duty) *Runner {
 		Add(FetchProposedBlock).
 		Add(DecideOnBlock).
 
-		// ##### pre consensus phase #####
+		// ##### consensus phase #####
 		MarkPhase(pipeline.ConsensusPhase).
 		SkipIfNotConsensusMessage(pipeline.PostConsensusPhase).
 		StopINoPreConsensusQuorum().
@@ -47,19 +47,10 @@ func NewProposerRunnerForDuty(config Config, duty *types.Duty) *Runner {
 
 		// ##### end phase #####
 		MarkPhase(pipeline.EndPhase)
-
-	return ret
-}
-
-func StartProposerRunner(r *Runner) *Runner {
-	// Get randao
-	// broadcast partial sig for randao
-
-	return r
 }
 
 // ReconstructBlockData reconstructs valid signed block and returns it.
-func ReconstructBlockData(runner *Runner, objects ...interface{}) (error, []interface{}) {
+func ReconstructBlockData(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
 	// if no post consensus quorum, return stop
 
 	// iterate all roots, reconstruct signature and return
@@ -67,7 +58,7 @@ func ReconstructBlockData(runner *Runner, objects ...interface{}) (error, []inte
 }
 
 // ReconstructRandao reconstructs returns it.
-func ReconstructRandao(runner *Runner, objects ...interface{}) (error, []interface{}) {
+func ReconstructRandao(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
 	// if no pre consensus quorum, return stop
 
 	// iterate all roots, reconstruct signature and return
@@ -75,7 +66,7 @@ func ReconstructRandao(runner *Runner, objects ...interface{}) (error, []interfa
 }
 
 // FetchProposedBlock takes as input reconstructed randao signature, add fetched proposed block
-func FetchProposedBlock(runner *Runner, objects ...interface{}) (error, []interface{}) {
+func FetchProposedBlock(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
 	// if no pre consensus quorum, return stop
 
 	// iterate all roots, reconstruct signature and return
@@ -83,7 +74,7 @@ func FetchProposedBlock(runner *Runner, objects ...interface{}) (error, []interf
 }
 
 // DecideOnBlock takes as input proposed block data, constructs consensus data and starts a qbft instance
-func DecideOnBlock(runner *Runner, objects ...interface{}) (error, []interface{}) {
+func DecideOnBlock(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
 	// if no pre consensus quorum, return stop
 
 	// iterate all roots, reconstruct signature and return

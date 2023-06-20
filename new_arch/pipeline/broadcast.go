@@ -3,11 +3,10 @@ package pipeline
 import (
 	ssz "github.com/ferranbt/fastssz"
 	"ssv-experiments/new_arch/p2p"
-	"ssv-experiments/new_arch/ssv"
 )
 
-func Broadcast(t p2p.MsgType) func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
-	return func(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+func Broadcast(t p2p.MsgType) func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
+	return func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 		data := objects[0].(ssz.Marshaler)
 
 		byts, err := data.MarshalSSZ()
@@ -17,7 +16,7 @@ func Broadcast(t p2p.MsgType) func(runner *ssv.Runner, objects ...interface{}) (
 
 		msg := &p2p.Message{
 			MsgType: t,
-			MsgID:   runner.GetConfig().Identifier,
+			MsgID:   pipeline.Runner.Identifier,
 			Data:    byts,
 		}
 
@@ -28,7 +27,7 @@ func Broadcast(t p2p.MsgType) func(runner *ssv.Runner, objects ...interface{}) (
 }
 
 // BroadcastBeacon broadcasts to the beacon chain
-func BroadcastBeacon(runner *ssv.Runner, objects ...interface{}) (error, []interface{}) {
+func BroadcastBeacon(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 	for _, item := range objects {
 		if _, encodable := item.(ssz.Marshaler); encodable {
 			// broadcast
