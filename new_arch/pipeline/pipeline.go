@@ -111,6 +111,7 @@ func (p *Pipeline) StopIfNoPartialSigQuorum(t types.PartialSigMsgType) *Pipeline
 	return p
 }
 
+// SkipIfNotConsensusMessage validates message type, will skip if not
 func (p *Pipeline) SkipIfNotConsensusMessage(nextPhase string) *Pipeline {
 	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 		// check if consensus message
@@ -127,6 +128,7 @@ func (p *Pipeline) SkipIfNotConsensusMessage(nextPhase string) *Pipeline {
 	return p
 }
 
+// SkipIfNotQBFTMessageType will validate message type, will skip if not
 func (p *Pipeline) SkipIfNotQBFTMessageType(nextPhase string, msgType uint64) *Pipeline {
 	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 		msg, ok := objects[0].(*qbft.SignedMessage)
