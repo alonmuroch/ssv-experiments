@@ -77,6 +77,13 @@ func (p *Pipeline) MarkPhase(name string) *Pipeline {
 	return p
 }
 
+func (p *Pipeline) Stop() *Pipeline {
+	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
+		return nil, []interface{}{Stop}
+	})
+	return p
+}
+
 func (p *Pipeline) StopINoPreConsensusQuorum() *Pipeline {
 	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 		// TODO check pre-consensus quorum

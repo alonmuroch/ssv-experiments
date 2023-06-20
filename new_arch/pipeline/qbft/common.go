@@ -26,7 +26,7 @@ func UponPrepare(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []
 	)
 }
 
-// CreatePrepareMessage creates and returns prepare message encoded in p2p.Message
+// CreatePrepareMessage creates and returns prepare message
 func CreatePrepareMessage(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
 	msg, err := pipeline.Instance.CreatePrepareMessage()
 	if err != nil {
@@ -54,6 +54,15 @@ func UponCommit(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []i
 		[]interface{}{pipeline.Instance.CommitQuorum()},
 		objects...,
 	)
+}
+
+// CreateCommitMessage creates and returns commit message
+func CreateCommitMessage(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
+	msg, err := pipeline.Instance.CreateCommitMessage()
+	if err != nil {
+		return err, nil
+	}
+	return nil, []interface{}{msg}
 }
 
 // NoQuorumStop checks if objects[0] == true, pass rest of ojects forward to next pipeline item. If false, stop

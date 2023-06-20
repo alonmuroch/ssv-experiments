@@ -23,12 +23,15 @@ func NewQBFTPipeline(instance *qbft.Instance) *pipeline.Pipeline {
 		SkipIfNotQBFTMessageType(CommitPhase, qbft.PrepareMessageType).
 		Add(UponPrepare).
 		Add(NoQuorumStop).
+		Add(CreateCommitMessage).
+		Add(pipeline.Broadcast(p2p.SSVConsensusMsgType)).
 
 		// ##### commit phase #####
 		MarkPhase(CommitPhase).
 		SkipIfNotQBFTMessageType(RoundChangePhase, qbft.CommitMessageType).
 		Add(UponCommit).
 		Add(NoQuorumStop).
+		Stop().
 
 		// ##### round change phase #####
 		MarkPhase(RoundChangePhase).
