@@ -5,7 +5,6 @@ import (
 	"ssv-experiments/new_arch/qbft"
 	"ssv-experiments/new_arch/ssv"
 	"ssv-experiments/new_arch/types"
-	"sync"
 )
 
 type ControlSymbols uint64
@@ -28,15 +27,12 @@ type Pipeline struct {
 	Instance *qbft.Instance
 	Items    []PipelineF
 	Phase    map[string]int // maps phase name to index
-
-	doOnce map[string]*sync.Once
 }
 
 func NewPipeline() *Pipeline {
 	return &Pipeline{
-		Items:  []PipelineF{},
-		Phase:  map[string]int{},
-		doOnce: map[string]*sync.Once{},
+		Items: []PipelineF{},
+		Phase: map[string]int{},
 	}
 }
 
@@ -84,26 +80,6 @@ func (p *Pipeline) Start(initObjs []interface{}) (error, []interface{}) {
 		i++
 	}
 	return nil, initObjs
-}
-
-// DoOnce will run provided function in an isolated pipeline (results will not be passed to the next pipeline func)
-func (p *Pipeline) DoOnce(phaseName string, f ...PipelineF) *Pipeline {
-	p.doOnce[phaseName] = &sync.Once{}
-	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
-		var err error
-		p.doOnce[phaseName].Do(func() {
-			tmp := NewPipeline()
-			tmp.Instance = p.Instance
-			tmp.Runner = p.Runner
-
-			for _, fFunc := range f {
-				tmp.Add(fFunc)
-			}
-			err, _ = tmp.Start(objects)
-		})
-		return err, objects
-	})
-	return p
 }
 
 // Add a pipeline item

@@ -7,6 +7,8 @@ import (
 	"ssv-experiments/new_arch/types"
 )
 
+const FirstRound = 1
+
 type Instance struct {
 	State      *State
 	Share      *types.Share
@@ -25,12 +27,13 @@ func NewInstance(data *InputData, share *types.Share, height, role uint64) *Inst
 	}
 }
 
-// Start will start the instance and return the messages to broadcast
-func (i *Instance) Start() (*Message, error) {
-	if i.proposerForRound(i.State.Round) == i.Share.OperatorID {
-		return i.CreateProposalMessage()
-	}
-	return nil, nil
+func (i *Instance) IsFirstRound() bool {
+	return i.State.Round == FirstRound
+}
+
+// IsProposer returns true if propsoer for current round
+func (i *Instance) IsProposer() bool {
+	return i.proposerForRound(i.State.Round) == i.Share.OperatorID
 }
 
 func (i *Instance) proposerForRound(round uint64) uint64 {

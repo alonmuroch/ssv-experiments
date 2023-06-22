@@ -33,7 +33,7 @@ func (r *Runner) HasPostConsensusQuorum() bool {
 }
 
 func (r *Runner) Finished() bool {
-	if r.State.DecidedData == nil {
+	if r.State.DecidedConsensusData() == nil {
 		return false
 	}
 

@@ -18,14 +18,6 @@ type SpecTest struct {
 	Messages []*p2p.Message `ssz-max:"256"`
 }
 
-func (test *SpecTest) Init(testSSZ []byte) (spec_test.TestObject, error) {
-	if err := test.UnmarshalSSZ(testSSZ); err != nil {
-		return nil, err
-	}
-
-	return test.Post, nil
-}
-
 func (test *SpecTest) Test(t *testing.T) *spec_test.TestResult {
 	p := ssv2.NewPipeline(test.Pre)
 	for _, msg := range test.Messages {
@@ -34,6 +26,7 @@ func (test *SpecTest) Test(t *testing.T) *spec_test.TestResult {
 	}
 
 	return &spec_test.TestResult{
-		ExpectedResult: test.Pre,
+		ExpectedResult: []spec_test.TestObject{test.Pre},
+		Actual:         []spec_test.TestObject{test.Post},
 	}
 }

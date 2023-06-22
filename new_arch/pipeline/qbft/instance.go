@@ -8,8 +8,8 @@ import (
 
 func NewQBFTPipeline(instance *qbft.Instance) *pipeline.Pipeline {
 	return NewPipeline(instance).
-		// ##### start qbft instance #####
-		DoOnce("start_qbft", StartQBFT, SignMessage, pipeline.Broadcast(p2p.SSVConsensusMsgType)).
+		// ##### propose if proposer #####
+		Add(ProposeForFirstRound).
 
 		// ##### start #####
 		Add(pipeline.DecodeMessage).
@@ -49,16 +49,18 @@ func NewQBFTPipeline(instance *qbft.Instance) *pipeline.Pipeline {
 		MarkPhase(EndPhase)
 }
 
-// StartQBFT calls qbft.Instance.Start, returns message to broadcast or stops
-func StartQBFT(p *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
-	msg, err := p.Instance.Start()
-	if err != nil {
+// ProposeForFirstRound will broadcast a proposal if first round and is proposer
+func ProposeForFirstRound(p *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
+	if p.Instance.IsFirstRound() == p.Instance.IsProposer() {
+		msg, err := p.Instance.CreateProposalMessage()
+		if err != nil {
+			return err, nil
+		}
+		err, _ = pipeline.Broadcast(p2p.SSVConsensusMsgType)(p, msg)
 		if err != nil {
 			return err, nil
 		}
 	}
-	if msg == nil {
-		return nil, []interface{}{pipeline.Stop}
-	}
-	return nil, []interface{}{msg}
+
+	return nil, objects
 }

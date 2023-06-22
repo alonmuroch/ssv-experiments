@@ -9,7 +9,6 @@ type State struct {
 	PartialSignatures Container `ssz-max:"256"`
 
 	StartingDuty *types.Duty
-	DecidedData  *types.ConsensusData
 }
 
 func NewState(duty *types.Duty) *State {
@@ -19,5 +18,10 @@ func NewState(duty *types.Duty) *State {
 }
 
 func (s *State) ReconstructSignature(msgs []*types.SignedPartialSignatureMessages) ([96]byte, error) {
+	panic("implement")
+}
+
+// DecidedConsensusData will return decided consensus data or nil if not decided
+func (s *State) DecidedConsensusData() *types.ConsensusData {
 	panic("implement")
 }
