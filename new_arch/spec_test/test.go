@@ -5,31 +5,33 @@ import (
 	"testing"
 )
 
+// SpecTest is a generic test struct runing and verifyin all tests with the goal of maximizing code and standard sharing between tests
 type SpecTest[T TestImpl] struct {
-	Test           T
-	ExpectedResult TestObject
+	Test T
 }
 
-func NewSpecTest[T TestImpl](testImpl T, testSSZ []byte) (*SpecTest[T], error) {
+func NewSpecTest[T TestImpl](testImpl T) (*SpecTest[T], error) {
 	ret := &SpecTest[T]{
 		Test: testImpl,
 	}
-
-	expected, err := ret.Test.Init(testSSZ)
-	if err != nil {
-		return nil, err
-	}
-	ret.ExpectedResult = expected
 	return ret, nil
 }
 
 func (test *SpecTest[T]) Run(t *testing.T) {
 	result := test.Test.Test(t)
 
-	expectedR, err := test.ExpectedResult.HashTreeRoot()
-	require.NoError(t, err)
-	resultR, err := result.ExpectedResult.HashTreeRoot()
-	require.EqualValues(t, expectedR, resultR)
+	require.True(t, len(result.ExpectedResult) == len(result.Actual))
+	for i := range result.ExpectedResult {
+		expected := result.ExpectedResult[i]
+		actual := result.Actual[i]
+
+		expectedR, err := expected.HashTreeRoot()
+		require.NoError(t, err)
+		actualR, err := actual.HashTreeRoot()
+		require.NoError(t, err)
+
+		require.EqualValues(t, expectedR, actualR)
+	}
 
 	if result.BroadcastedBeaconObjects.NotEmpty() {
 		// TODO test broadcasted

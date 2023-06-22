@@ -8,6 +8,10 @@ import (
 
 func NewQBFTPipeline(instance *qbft.Instance) *pipeline.Pipeline {
 	return NewPipeline(instance).
+		// ##### start qbft instance #####
+		DoOnce("start_qbft", StartQBFT, SignMessage, pipeline.Broadcast(p2p.SSVConsensusMsgType)).
+
+		// ##### start #####
 		Add(pipeline.DecodeMessage).
 		SkipIfNotConsensusMessage(EndPhase).
 
@@ -16,7 +20,9 @@ func NewQBFTPipeline(instance *qbft.Instance) *pipeline.Pipeline {
 		SkipIfNotQBFTMessageType(PreparePhase, qbft.ProposalMessageType).
 		Add(UponProposal).
 		Add(CreatePrepareMessage).
+		Add(SignMessage).
 		Add(pipeline.Broadcast(p2p.SSVConsensusMsgType)).
+		Stop().
 
 		// ##### prepare phase #####
 		MarkPhase(PreparePhase).
@@ -24,7 +30,9 @@ func NewQBFTPipeline(instance *qbft.Instance) *pipeline.Pipeline {
 		Add(UponPrepare).
 		Add(NoQuorumStop).
 		Add(CreateCommitMessage).
+		Add(SignMessage).
 		Add(pipeline.Broadcast(p2p.SSVConsensusMsgType)).
+		Stop().
 
 		// ##### commit phase #####
 		MarkPhase(CommitPhase).
@@ -39,4 +47,18 @@ func NewQBFTPipeline(instance *qbft.Instance) *pipeline.Pipeline {
 
 		// ##### end phase #####
 		MarkPhase(EndPhase)
+}
+
+// StartQBFT calls qbft.Instance.Start, returns message to broadcast or stops
+func StartQBFT(p *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
+	msg, err := p.Instance.Start()
+	if err != nil {
+		if err != nil {
+			return err, nil
+		}
+	}
+	if msg == nil {
+		return nil, []interface{}{pipeline.Stop}
+	}
+	return nil, []interface{}{msg}
 }

@@ -17,15 +17,15 @@ func (obj TestObjects) NotEmpty() bool {
 }
 
 type TestResult struct {
-	ExpectedResult           TestObject
+	ExpectedResult           TestObjects
+	Actual                   TestObjects
 	BroadcastedMessages      TestObjects
 	BroadcastedBeaconObjects TestObjects
 }
 
 type TestImpl interface {
-	// Init from an encoded ssz test, returns the expected post test object to be verified after test is run
-	Init(testSSZ []byte) (TestObject, error)
-	// Test will run the test, fail if errors during test and will return a post run test object to be compared with
+	ssz.Marshaler
+	// Test will run the test, returns the expected and actual test results
 	Test(t *testing.T) *TestResult
 }
 

@@ -5,6 +5,7 @@ import (
 	"ssv-experiments/new_arch/qbft"
 	"ssv-experiments/new_arch/ssv"
 	"ssv-experiments/new_arch/types"
+	"sync"
 )
 
 type ControlSymbols uint64
@@ -27,12 +28,31 @@ type Pipeline struct {
 	Instance *qbft.Instance
 	Items    []PipelineF
 	Phase    map[string]int // maps phase name to index
+
+	doOnce map[string]*sync.Once
+}
+
+func NewPipeline() *Pipeline {
+	return &Pipeline{
+		Items:  []PipelineF{},
+		Phase:  map[string]int{},
+		doOnce: map[string]*sync.Once{},
+	}
 }
 
 // ProcessMessage inputs a P2P message and passes it through the pipeline
 func (p *Pipeline) ProcessMessage(msg interface{}) (error, []interface{}) {
-	initObjs := []interface{}{msg}
-	for i := range p.Items {
+	return p.Start([]interface{}{msg})
+}
+
+// Start starts pipeline with input
+func (p *Pipeline) Start(initObjs []interface{}) (error, []interface{}) {
+	i := 0
+	for {
+		if i >= len(p.Items) {
+			break
+		}
+
 		f := p.Items[i]
 		// check control symbols
 		if len(initObjs) > 0 {
@@ -56,13 +76,34 @@ func (p *Pipeline) ProcessMessage(msg interface{}) (error, []interface{}) {
 		}
 
 		// execute
-		err, objs := f(p, initObjs)
+		err, objs := f(p, initObjs...)
 		if err != nil {
 			return err, []interface{}{}
 		}
 		initObjs = objs
+		i++
 	}
 	return nil, initObjs
+}
+
+// DoOnce will run provided function in an isolated pipeline (results will not be passed to the next pipeline func)
+func (p *Pipeline) DoOnce(phaseName string, f ...PipelineF) *Pipeline {
+	p.doOnce[phaseName] = &sync.Once{}
+	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
+		var err error
+		p.doOnce[phaseName].Do(func() {
+			tmp := NewPipeline()
+			tmp.Instance = p.Instance
+			tmp.Runner = p.Runner
+
+			for _, fFunc := range f {
+				tmp.Add(fFunc)
+			}
+			err, _ = tmp.Start(objects)
+		})
+		return err, objects
+	})
+	return p
 }
 
 // Add a pipeline item
@@ -121,9 +162,9 @@ func (p *Pipeline) StopIfNoPartialSigQuorum(t types.PartialSigMsgType) *Pipeline
 // SkipIfNotConsensusMessage validates message type, will skip if not
 func (p *Pipeline) SkipIfNotConsensusMessage(nextPhase string) *Pipeline {
 	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
-		// check if consensus message
+		_, ok := objects[0].(*qbft.SignedMessage)
 
-		if true { // consensus message
+		if ok { // consensus message
 			return nil, objects
 		}
 		return nil, append(

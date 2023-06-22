@@ -7,10 +7,6 @@ type InputData struct {
 	validateF func(data []byte) error
 }
 
-func (input *InputData) Hash() ([32]byte, error) {
-	return input.HashTreeRoot()
-}
-
 func (input *InputData) Validate() error {
 	return input.validateF(input.Data)
 }

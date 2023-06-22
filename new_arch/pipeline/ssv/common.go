@@ -73,7 +73,7 @@ func QBFTProcessMessage(p *pipeline.Pipeline, objects ...interface{}) (error, []
 		return nil, []interface{}{pipeline.Stop}
 	}
 
-	return nil, []interface{}{p.Instance.DecidedValue}
+	return nil, []interface{}{p.Instance.State.DecidedValue()}
 }
 
 // AddPostConsensusMessage adds post consensus msg to container

@@ -14,12 +14,27 @@ const (
 	EndPhase         = "EndPhase"
 )
 
+// SignMessage receives an unsigned qbft.Message and returns a signed message
+func SignMessage(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
+	msg, ok := objects[0].(*qbft.Message)
+	if !ok {
+		return errors.New("object type not qbft.Message"), nil
+	}
+
+	ret := &qbft.SignedMessage{
+		Message:   *msg,
+		Signers:   []uint64{1},
+		Signature: [96]byte{},
+	}
+
+	return nil, []interface{}{ret}
+}
+
 // UponPrepare runs the qbft.UponPrepare stage. Returns true and original objects slice if quorum reached
 func UponPrepare(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
 	if err := pipeline.Instance.UponPrepare(objects[0].(*qbft.SignedMessage)); err != nil {
 		return err, nil
 	}
-
 	return nil, append(
 		[]interface{}{pipeline.Instance.PrepareQuorum()},
 		objects...,

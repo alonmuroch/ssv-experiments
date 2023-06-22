@@ -20,9 +20,17 @@ type Message struct {
 	PrepareJustification     [][]byte `ssz-max:"13,65536"` // 2^16
 }
 
+func (msg *Message) GetIdentifier() [56]byte {
+	return msg.Identifier
+}
+
 type SignedMessage struct {
 	Signature [96]byte `ssz-size:"96"`
 	Signers   []uint64 `ssz-max:"13"`
 	Message   Message
 	FullData  []byte `ssz-max:"4259840"`
+}
+
+func (signed *SignedMessage) GetIdentifier() [56]byte {
+	return signed.Message.Identifier
 }

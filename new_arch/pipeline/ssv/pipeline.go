@@ -6,9 +6,7 @@ import (
 )
 
 func NewPipeline(runner *ssv.Runner) *pipeline.Pipeline {
-	return &pipeline.Pipeline{
-		Runner: runner,
-		Items:  []pipeline.PipelineF{},
-		Phase:  map[string]int{},
-	}
+	ret := pipeline.NewPipeline()
+	ret.Runner = runner
+	return ret
 }

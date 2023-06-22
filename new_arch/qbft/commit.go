@@ -1,11 +1,17 @@
 package qbft
 
 func (i *Instance) UponCommit(msg *SignedMessage) error {
-	panic("implement")
+	// TOOD implement
+	i.State.AddMessage(msg)
+	return nil
 }
 
-func (i *Instance) CreateCommitMessage() (*SignedMessage, error) {
-	panic("implement")
+func (i *Instance) CreateCommitMessage() (*Message, error) {
+	// TODO implement
+	return &Message{
+		Round:   i.State.Round,
+		MsgType: CommitMessageType,
+	}, nil
 }
 
 func (i *Instance) CommitQuorum() bool {

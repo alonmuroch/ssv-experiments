@@ -6,9 +6,7 @@ import (
 )
 
 func NewPipeline(instance *qbft.Instance) *pipeline.Pipeline {
-	return &pipeline.Pipeline{
-		Instance: instance,
-		Items:    []pipeline.PipelineF{},
-		Phase:    map[string]int{},
-	}
+	ret := pipeline.NewPipeline()
+	ret.Instance = instance
+	return ret
 }

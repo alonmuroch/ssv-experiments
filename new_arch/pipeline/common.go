@@ -33,10 +33,15 @@ func DecodeMessage(pipeline *Pipeline, objects ...interface{}) (error, []interfa
 	}
 }
 
+type IBroadcastable interface {
+	GetIdentifier() [56]byte
+	ssz.Marshaler
+}
+
 // Broadcast will broadcast a message to the SSV network
 func Broadcast(t p2p.MsgType) func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 	return func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
-		data := objects[0].(ssz.Marshaler)
+		data := objects[0].(IBroadcastable)
 
 		byts, err := data.MarshalSSZ()
 		if err != nil {
@@ -45,7 +50,7 @@ func Broadcast(t p2p.MsgType) func(pipeline *Pipeline, objects ...interface{}) (
 
 		msg := &p2p.Message{
 			MsgType: t,
-			MsgID:   pipeline.Runner.Identifier,
+			MsgID:   data.GetIdentifier(),
 			Data:    byts,
 		}
 

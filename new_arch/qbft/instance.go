@@ -8,11 +8,10 @@ import (
 )
 
 type Instance struct {
-	State        *State
-	Share        *types.Share
-	Identifier   p2p.Identifier `ssz-size:"56"`
-	StartValue   *InputData
-	DecidedValue *InputData
+	State      *State
+	Share      *types.Share
+	Identifier p2p.Identifier `ssz-size:"56"`
+	StartValue *InputData
 }
 
 func NewInstance(data *InputData, share *types.Share, height, role uint64) *Instance {
@@ -27,7 +26,7 @@ func NewInstance(data *InputData, share *types.Share, height, role uint64) *Inst
 }
 
 // Start will start the instance and return the messages to broadcast
-func (i *Instance) Start() (*SignedMessage, error) {
+func (i *Instance) Start() (*Message, error) {
 	if i.proposerForRound(i.State.Round) == i.Share.OperatorID {
 		return i.CreateProposalMessage()
 	}
@@ -35,7 +34,8 @@ func (i *Instance) Start() (*SignedMessage, error) {
 }
 
 func (i *Instance) proposerForRound(round uint64) uint64 {
-	panic("implement")
+	// TODO round robin
+	return 1
 }
 
 // ProcessMessage processes the incoming message and returns an optional message to be broadcasted. Or error
