@@ -3,6 +3,7 @@ package runner
 import (
 	"github.com/stretchr/testify/require"
 	"ssv-experiments/new_arch/p2p"
+	ssv2 "ssv-experiments/new_arch/pipeline/ssv"
 	"ssv-experiments/new_arch/spec_test"
 	"ssv-experiments/new_arch/ssv"
 	"ssv-experiments/new_arch/types"
@@ -10,13 +11,11 @@ import (
 )
 
 type SpecTest struct {
-	Pre      *ssv.State
-	Post     *ssv.State
+	Pre      *ssv.Runner
+	Post     *ssv.Runner
 	Share    *types.Share
 	Duty     *types.Duty
 	Messages []*p2p.Message `ssz-max:"256"`
-
-	runner *ssv.Runner
 }
 
 func (test *SpecTest) Init(testSSZ []byte) (spec_test.TestObject, error) {
@@ -24,19 +23,17 @@ func (test *SpecTest) Init(testSSZ []byte) (spec_test.TestObject, error) {
 		return nil, err
 	}
 
-	test.runner = ssv.NewRunner(ssv.Config{
-		Share: test.Share,
-	}, test.Duty)
-
 	return test.Post, nil
 }
 
 func (test *SpecTest) Test(t *testing.T) *spec_test.TestResult {
+	p := ssv2.NewPipeline(test.Pre)
 	for _, msg := range test.Messages {
-		require.NoError(t, test.runner.ProcessMessage(msg))
+		err, _ := p.ProcessMessage(msg)
+		require.NoError(t, err)
 	}
 
 	return &spec_test.TestResult{
-		ExpectedResult: &test.runner.State,
+		ExpectedResult: test.Pre,
 	}
 }
