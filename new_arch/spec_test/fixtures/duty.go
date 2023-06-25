@@ -7,5 +7,5 @@ const Slot = 123
 var AttesterDuty = &types.Duty{
 	Role:        types.BeaconRoleAttester,
 	ValidatorPK: Validator,
-	Slot:        123,
+	Slot:        Slot,
 }

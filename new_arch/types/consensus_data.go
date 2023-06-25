@@ -3,7 +3,7 @@ package types
 type ConsensusData struct {
 	// Duty max size is
 	// 			8 + 48 + 6*8 + 13*8 = 208 ~= 2^8
-	Duty        Duty
+	Duty        *Duty
 	DataVersion uint64
 	// PreConsensusJustifications max size is
 	//			13*SignedPartialSignatureMessage(2^16) ~= 2^20

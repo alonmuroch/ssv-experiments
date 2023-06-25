@@ -10,6 +10,12 @@ import (
 type ControlSymbols uint64
 
 const (
+	InitPhase  = "InitPhase"
+	StartPhase = "StartPhase"
+	EndPhase   = "EndPhase"
+)
+
+const (
 	// Stop means stop pipeline
 	Stop ControlSymbols = iota
 	// SkipNext means skip the next pipeline element
@@ -36,50 +42,14 @@ func NewPipeline() *Pipeline {
 	}
 }
 
-// ProcessMessage inputs a P2P message and passes it through the pipeline
-func (p *Pipeline) ProcessMessage(msg interface{}) (error, []interface{}) {
-	return p.Start([]interface{}{msg})
+func (p *Pipeline) Init() error {
+	err, _ := Run(p, InitPhase, nil)
+	return err
 }
 
-// Start starts pipeline with input
-func (p *Pipeline) Start(initObjs []interface{}) (error, []interface{}) {
-	i := 0
-	for {
-		if i >= len(p.Items) {
-			break
-		}
-
-		f := p.Items[i]
-		// check control symbols
-		if len(initObjs) > 0 {
-			if c, isControlSymbol := initObjs[0].(ControlSymbols); isControlSymbol {
-				switch c {
-				case Stop:
-					return nil, []interface{}{}
-				case SkipNext:
-					continue
-				case SkipToPhase:
-					phaseName := initObjs[1].(string)
-					if val, found := p.Phase[phaseName]; found {
-						i = val // bump i to phase index
-						initObjs = initObjs[2:]
-						continue
-					} else {
-						return errors.New("phase not found"), []interface{}{}
-					}
-				}
-			}
-		}
-
-		// execute
-		err, objs := f(p, initObjs...)
-		if err != nil {
-			return err, []interface{}{}
-		}
-		initObjs = objs
-		i++
-	}
-	return nil, initObjs
+// ProcessMessage inputs a P2P message and passes it through the pipeline
+func (p *Pipeline) ProcessMessage(msg interface{}) (error, []interface{}) {
+	return Run(p, StartPhase, []interface{}{msg})
 }
 
 // Add a pipeline item
@@ -135,19 +105,14 @@ func (p *Pipeline) StopIfNoPartialSigQuorum(t types.PartialSigMsgType) *Pipeline
 	return p
 }
 
-// SkipIfNotConsensusMessage validates message type, will skip if not
-func (p *Pipeline) SkipIfNotConsensusMessage(nextPhase string) *Pipeline {
+// ValidateConsensusMessage validates consensus message (type, struct, etc), returns error if not valid
+func (p *Pipeline) ValidateConsensusMessage() *Pipeline {
 	p.Items = append(p.Items, func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 		_, ok := objects[0].(*qbft.SignedMessage)
-
-		if ok { // consensus message
+		if ok {
 			return nil, objects
 		}
-		return nil, append(
-			[]interface{}{
-				SkipToPhase,
-				nextPhase,
-			}, objects...)
+		return errors.New("not a consensus message"), nil
 	})
 	return p
 }
@@ -206,4 +171,13 @@ func (p *Pipeline) StopIfNotPostConsensusMessage() *Pipeline {
 			}, objects...)
 	})
 	return p
+}
+
+// IndexForPhase returns the index for a marked phase or error
+func (p *Pipeline) IndexForPhase(phase string) (int, error) {
+	if val, found := p.Phase[phase]; found {
+		return val, nil
+	} else {
+		return 0, errors.New("phase not found")
+	}
 }

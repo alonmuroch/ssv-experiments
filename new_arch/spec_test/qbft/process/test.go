@@ -17,7 +17,7 @@ type SpecTest struct {
 
 // Test will run the test, fail if errors during test and will return a post run test object to be compared with
 func (test *SpecTest) Test(t *testing.T) *spec_test.TestResult {
-	p := qbft2.NewQBFTPipeline(test.Pre)
+	p := qbft2.NewQBFTPipelineFromInstance(test.Pre)
 	for _, msg := range test.Messages {
 		byts, err := msg.MarshalSSZ()
 		require.NoError(t, err)

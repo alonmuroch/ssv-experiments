@@ -1,5 +1,7 @@
 package qbft
 
+import "ssv-experiments/new_arch/types"
+
 type State struct {
 	Round  uint64
 	Height uint64
@@ -10,20 +12,20 @@ type State struct {
 	Messages Container `ssz-max:"256"`
 }
 
-func (s *State) PrepareValue() *InputData {
+func (s *State) PrepareValue() *types.ConsensusData {
 	//prepare := s.Messages.RoundAndType(s.PreparedRound, PrepareMessageType)
 
 	// TODO check quorum for certain value
 
-	return &InputData{}
+	return &types.ConsensusData{}
 }
 
-func (s *State) DecidedValue() *InputData {
+func (s *State) DecidedValue() *types.ConsensusData {
 	//prepare := s.Messages.RoundAndType(s.PreparedRound, CommitMessageType)
 
 	// TODO check quorum for certain value
 
-	return &InputData{}
+	return &types.ConsensusData{}
 }
 
 func (s *State) AddMessage(msg *SignedMessage) {

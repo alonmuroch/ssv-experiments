@@ -1,6 +1,9 @@
 package qbft
 
-import "ssv-experiments/new_arch/p2p"
+import (
+	"ssv-experiments/new_arch/p2p"
+	"ssv-experiments/new_arch/types"
+)
 
 const (
 	ProposalMessageType = iota
@@ -28,7 +31,7 @@ type SignedMessage struct {
 	Signature [96]byte `ssz-size:"96"`
 	Signers   []uint64 `ssz-max:"13"`
 	Message   Message
-	FullData  []byte `ssz-max:"4259840"`
+	FullData  *types.ConsensusData
 }
 
 func (signed *SignedMessage) GetIdentifier() [56]byte {

@@ -11,7 +11,6 @@ const (
 	PreparePhase     = "PreparePhase"
 	CommitPhase      = "CommitPhase"
 	RoundChangePhase = "RoundChangePhase"
-	EndPhase         = "EndPhase"
 )
 
 // SignMessage receives an unsigned qbft.Message and returns a signed message

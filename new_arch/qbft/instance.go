@@ -13,10 +13,10 @@ type Instance struct {
 	State      *State
 	Share      *types.Share
 	Identifier p2p.Identifier `ssz-size:"56"`
-	StartValue *InputData
+	StartValue *types.ConsensusData
 }
 
-func NewInstance(data *InputData, share *types.Share, height, role uint64) *Instance {
+func NewInstance(data *types.ConsensusData, share *types.Share, height, role uint64) *Instance {
 	return &Instance{
 		State: &State{
 			Height: height,

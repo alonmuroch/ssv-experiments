@@ -8,34 +8,13 @@ import (
 
 func FullFlow() *process.SpecTest {
 	msg := []*qbft.SignedMessage{
-		{
-			Message: qbft.Message{Round: 1, MsgType: qbft.ProposalMessageType},
-			Signers: []uint64{1},
-		},
-		{
-			Message: qbft.Message{Round: 1, MsgType: qbft.PrepareMessageType},
-			Signers: []uint64{1},
-		},
-		{
-			Message: qbft.Message{Round: 1, MsgType: qbft.PrepareMessageType},
-			Signers: []uint64{2},
-		},
-		{
-			Message: qbft.Message{Round: 1, MsgType: qbft.PrepareMessageType},
-			Signers: []uint64{3},
-		},
-		{
-			Message: qbft.Message{Round: 1, MsgType: qbft.CommitMessageType},
-			Signers: []uint64{1},
-		},
-		{
-			Message: qbft.Message{Round: 1, MsgType: qbft.CommitMessageType},
-			Signers: []uint64{2},
-		},
-		{
-			Message: qbft.Message{Round: 1, MsgType: qbft.CommitMessageType},
-			Signers: []uint64{3},
-		},
+		fixtures.QBFTSignedMessage(1, 1, qbft.ProposalMessageType),
+		fixtures.QBFTSignedMessage(1, 1, qbft.PrepareMessageType),
+		fixtures.QBFTSignedMessage(2, 1, qbft.PrepareMessageType),
+		fixtures.QBFTSignedMessage(3, 1, qbft.PrepareMessageType),
+		fixtures.QBFTSignedMessage(1, 1, qbft.CommitMessageType),
+		fixtures.QBFTSignedMessage(2, 1, qbft.CommitMessageType),
+		fixtures.QBFTSignedMessage(3, 1, qbft.CommitMessageType),
 	}
 
 	return &process.SpecTest{
@@ -47,7 +26,7 @@ func FullFlow() *process.SpecTest {
 			},
 			Share:      fixtures.Share,
 			Identifier: fixtures.Identifier,
-			StartValue: fixtures.InputData,
+			StartValue: fixtures.AttesterConsensusData,
 		},
 		Post: &qbft.Instance{
 			State: &qbft.State{
@@ -58,7 +37,7 @@ func FullFlow() *process.SpecTest {
 			},
 			Share:      fixtures.Share,
 			Identifier: fixtures.Identifier,
-			StartValue: fixtures.InputData,
+			StartValue: fixtures.AttesterConsensusData,
 		},
 		Messages: msg,
 	}

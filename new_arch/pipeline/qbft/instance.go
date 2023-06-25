@@ -4,16 +4,27 @@ import (
 	"ssv-experiments/new_arch/p2p"
 	"ssv-experiments/new_arch/pipeline"
 	"ssv-experiments/new_arch/qbft"
+	"ssv-experiments/new_arch/types"
 )
 
-func NewQBFTPipeline(instance *qbft.Instance) *pipeline.Pipeline {
-	return NewPipeline(instance).
+func NewQBFTPipeline(inputData *types.ConsensusData, share *types.Share) *pipeline.Pipeline {
+	instance := qbft.NewInstance(inputData, share, inputData.Duty.Role, inputData.Duty.Role)
+	return NewQBFTPipelineFromInstance(instance)
+}
+
+func NewQBFTPipelineFromInstance(instance *qbft.Instance) *pipeline.Pipeline {
+	ret := pipeline.NewPipeline()
+	ret.Instance = instance
+	ret.
 		// ##### propose if proposer #####
+		MarkPhase(pipeline.InitPhase).
 		Add(ProposeForFirstRound).
+		Stop().
 
 		// ##### start #####
+		MarkPhase(pipeline.StartPhase).
 		Add(pipeline.DecodeMessage).
-		SkipIfNotConsensusMessage(EndPhase).
+		ValidateConsensusMessage().
 
 		// ##### proposal phase #####
 		MarkPhase(ProposalPhase).
@@ -43,10 +54,14 @@ func NewQBFTPipeline(instance *qbft.Instance) *pipeline.Pipeline {
 
 		// ##### round change phase #####
 		MarkPhase(RoundChangePhase).
-		SkipIfNotQBFTMessageType(EndPhase, qbft.RoundChangeMessageType).
+		SkipIfNotQBFTMessageType(pipeline.EndPhase, qbft.RoundChangeMessageType).
 
 		// ##### end phase #####
-		MarkPhase(EndPhase)
+		MarkPhase(pipeline.EndPhase).
+		Stop()
+
+	ret.Init() // runs init phase
+	return ret
 }
 
 // ProposeForFirstRound will broadcast a proposal if first round and is proposer
