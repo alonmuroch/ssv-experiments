@@ -50,6 +50,37 @@ func (i *Instance) ProcessMessage(msg *SignedMessage) (*SignedMessage, error) {
 	return nil, nil
 }
 
+// Decided returns true if decided.
 func (i *Instance) Decided() bool {
-	panic("implement")
+	found, _ := i.DecidedRoot()
+	return found
+}
+
+func (i *Instance) DecidedRoot() (bool, [32]byte) {
+	byRoot := make(map[[32]byte][]*SignedMessage)
+
+	// batch messages by root. If exists a decided message return immediately
+	for _, m := range i.State.Messages {
+		if m.Message.MsgType != CommitMessageType {
+			continue
+		}
+
+		// if decided message return true
+		if len(m.Signers) >= int(i.Share.Quorum) {
+			return true, m.Message.Root
+		}
+
+		if byRoot[m.Message.Root] == nil {
+			byRoot[m.Message.Root] = []*SignedMessage{}
+		}
+		byRoot[m.Message.Root] = append(byRoot[m.Message.Root], m)
+	}
+
+	// find if decided
+	for _, msgs := range byRoot {
+		if len(msgs) >= int(i.Share.Quorum) {
+			return true, msgs[0].Message.Root
+		}
+	}
+	return false, [32]byte{}
 }

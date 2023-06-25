@@ -2,7 +2,6 @@ package process
 
 import (
 	"github.com/stretchr/testify/require"
-	"ssv-experiments/new_arch/p2p"
 	qbft2 "ssv-experiments/new_arch/pipeline/qbft"
 	"ssv-experiments/new_arch/qbft"
 	"ssv-experiments/new_arch/spec_test"
@@ -17,18 +16,10 @@ type SpecTest struct {
 
 // Test will run the test, fail if errors during test and will return a post run test object to be compared with
 func (test *SpecTest) Test(t *testing.T) *spec_test.TestResult {
-	p := qbft2.NewQBFTPipelineFromInstance(test.Pre)
+	p, err := qbft2.NewQBFTPipelineFromInstance(test.Pre)
+	require.NoError(t, err)
 	for _, msg := range test.Messages {
-		byts, err := msg.MarshalSSZ()
-		require.NoError(t, err)
-
-		p2pMessage := &p2p.Message{
-			MsgType: p2p.SSVConsensusMsgType,
-			MsgID:   msg.Message.Identifier,
-			Data:    byts,
-		}
-
-		err, _ = p.ProcessMessage(p2pMessage)
+		err, _ = p.ProcessMessage(msg)
 		require.NoError(t, err)
 	}
 

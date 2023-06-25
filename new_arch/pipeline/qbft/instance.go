@@ -7,12 +7,12 @@ import (
 	"ssv-experiments/new_arch/types"
 )
 
-func NewQBFTPipeline(inputData *types.ConsensusData, share *types.Share) *pipeline.Pipeline {
+func NewQBFTPipeline(inputData *types.ConsensusData, share *types.Share) (*pipeline.Pipeline, error) {
 	instance := qbft.NewInstance(inputData, share, inputData.Duty.Role, inputData.Duty.Role)
 	return NewQBFTPipelineFromInstance(instance)
 }
 
-func NewQBFTPipelineFromInstance(instance *qbft.Instance) *pipeline.Pipeline {
+func NewQBFTPipelineFromInstance(instance *qbft.Instance) (*pipeline.Pipeline, error) {
 	ret := pipeline.NewPipeline()
 	ret.Instance = instance
 	ret.
@@ -23,7 +23,6 @@ func NewQBFTPipelineFromInstance(instance *qbft.Instance) *pipeline.Pipeline {
 
 		// ##### start #####
 		MarkPhase(pipeline.StartPhase).
-		Add(pipeline.DecodeMessage).
 		ValidateConsensusMessage().
 
 		// ##### proposal phase #####
@@ -60,12 +59,12 @@ func NewQBFTPipelineFromInstance(instance *qbft.Instance) *pipeline.Pipeline {
 		MarkPhase(pipeline.EndPhase).
 		Stop()
 
-	ret.Init() // runs init phase
-	return ret
+	return ret, ret.Init() // runs init phase
 }
 
 // ProposeForFirstRound will broadcast a proposal if first round and is proposer
 func ProposeForFirstRound(p *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
+	// TODO - broadcast only once
 	if p.Instance.IsFirstRound() == p.Instance.IsProposer() {
 		msg, err := p.Instance.CreateProposalMessage()
 		if err != nil {
