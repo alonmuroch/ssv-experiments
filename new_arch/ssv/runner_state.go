@@ -7,8 +7,7 @@ import (
 type State struct {
 	// PartialSignatures holds partial BLS signatures
 	PartialSignatures Container `ssz-max:"256"`
-
-	StartingDuty *types.Duty
+	StartingDuty      *types.Duty
 }
 
 func NewState(duty *types.Duty) *State {

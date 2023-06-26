@@ -21,14 +21,6 @@ func (s *State) PrepareValue() *types.ConsensusData {
 	return &types.ConsensusData{}
 }
 
-func (s *State) DecidedValue() *types.ConsensusData {
-	//prepare := s.Messages.RoundAndType(s.PreparedRound, CommitMessageType)
-
-	// TODO check quorum for certain value
-
-	return &types.ConsensusData{}
-}
-
 func (s *State) AddMessage(msg *SignedMessage) {
 	s.Messages = append(s.Messages, msg)
 }

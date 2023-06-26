@@ -13,6 +13,15 @@ const (
 	RoundChangePhase = "RoundChangePhase"
 )
 
+// ValidateConsensusMessage validates consensus message (type, struct, etc), returns error if not valid
+func ValidateConsensusMessage(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
+	_, ok := objects[0].(*qbft.SignedMessage)
+	if ok {
+		return nil, objects
+	}
+	return errors.New("not a consensus message"), nil
+}
+
 // SignMessage receives an unsigned qbft.Message and returns a signed message
 func SignMessage(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
 	msg, ok := objects[0].(*qbft.Message)
@@ -90,4 +99,27 @@ func NoQuorumStop(p *pipeline.Pipeline, objects ...interface{}) (error, []interf
 		return nil, []interface{}{pipeline.Stop}
 	}
 	return nil, objects[1:]
+}
+
+// NotQBFTMessageTypeSkip will validate message type, will skip if not
+func NotQBFTMessageTypeSkip(nextPhase string, msgType uint64) func(p *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
+	return func(p *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
+		msg, ok := objects[0].(*qbft.SignedMessage)
+		if !ok {
+			return nil, append(
+				[]interface{}{
+					pipeline.SkipToPhase,
+					nextPhase,
+				}, objects...)
+		}
+
+		if msg.Message.MsgType == msgType {
+			return nil, objects
+		}
+		return nil, append(
+			[]interface{}{
+				pipeline.SkipToPhase,
+				nextPhase,
+			}, objects...)
+	}
 }

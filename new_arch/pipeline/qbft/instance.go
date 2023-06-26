@@ -23,11 +23,11 @@ func NewQBFTPipelineFromInstance(instance *qbft.Instance) (*pipeline.Pipeline, e
 
 		// ##### start #####
 		MarkPhase(pipeline.StartPhase).
-		ValidateConsensusMessage().
+		Add(ValidateConsensusMessage).
 
 		// ##### proposal phase #####
 		MarkPhase(ProposalPhase).
-		SkipIfNotQBFTMessageType(PreparePhase, qbft.ProposalMessageType).
+		Add(NotQBFTMessageTypeSkip(PreparePhase, qbft.ProposalMessageType)).
 		Add(UponProposal).
 		Add(CreatePrepareMessage).
 		Add(SignMessage).
@@ -36,7 +36,7 @@ func NewQBFTPipelineFromInstance(instance *qbft.Instance) (*pipeline.Pipeline, e
 
 		// ##### prepare phase #####
 		MarkPhase(PreparePhase).
-		SkipIfNotQBFTMessageType(CommitPhase, qbft.PrepareMessageType).
+		Add(NotQBFTMessageTypeSkip(CommitPhase, qbft.PrepareMessageType)).
 		Add(UponPrepare).
 		Add(NoQuorumStop).
 		Add(CreateCommitMessage).
@@ -46,14 +46,14 @@ func NewQBFTPipelineFromInstance(instance *qbft.Instance) (*pipeline.Pipeline, e
 
 		// ##### commit phase #####
 		MarkPhase(CommitPhase).
-		SkipIfNotQBFTMessageType(RoundChangePhase, qbft.CommitMessageType).
+		Add(NotQBFTMessageTypeSkip(RoundChangePhase, qbft.CommitMessageType)).
 		Add(UponCommit).
 		Add(NoQuorumStop).
 		Stop().
 
 		// ##### round change phase #####
 		MarkPhase(RoundChangePhase).
-		SkipIfNotQBFTMessageType(pipeline.EndPhase, qbft.RoundChangeMessageType).
+		Add(NotQBFTMessageTypeSkip(pipeline.EndPhase, qbft.RoundChangeMessageType)).
 
 		// ##### end phase #####
 		MarkPhase(pipeline.EndPhase).

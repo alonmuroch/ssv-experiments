@@ -1,42 +1,54 @@
 package ssv
 
 import (
+	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"ssv-experiments/new_arch/p2p"
 	"ssv-experiments/new_arch/pipeline"
+	qbft2 "ssv-experiments/new_arch/pipeline/qbft"
+	"ssv-experiments/new_arch/qbft"
 	"ssv-experiments/new_arch/ssv"
 	"ssv-experiments/new_arch/types"
 )
 
-func NewAttesterPipeline(runner *ssv.Runner) *pipeline.Pipeline {
-	return NewPipeline(runner).
-		//DoOnce("decide_attestation_data",).
-		
+func NewAttesterPipeline(runner *ssv.Runner) (*pipeline.Pipeline, error) {
+	ret := pipeline.NewPipeline()
+	ret.Runner = runner
+	ret.
+		// ##### fetch attestation data and start QBFT instance #####
+		MarkPhase(pipeline.InitPhase).
+		Add(DecideOnAttestationData).
+		Stop().
+
+		// ##### start #####
+		MarkPhase(pipeline.StartPhase).
 		Add(pipeline.DecodeMessage).
 
 		// ##### consensus phase #####
 		MarkPhase(ConsensusPhase).
-		SkipIfNotConsensusMessage(PostConsensusPhase).
+		Add(NotQBFTMessageSkip(PostConsensusPhase)).
 		Add(QBFTProcessMessage).
 		Add(ValidateDecidedValue(func(data *types.ConsensusData) error {
 			return nil
 		})).
-		Add(SignBeaconObject).
-		Add(ConstructPostConsensusMessage(types.PostConsensusPartialSig)).
+		Add(SignBeaconObject(types.PostConsensusPartialSig)).
 		Add(pipeline.Broadcast(p2p.SSVPartialSignatureMsgType)).
+		Stop().
 
 		// ##### post consensus phase #####
 		MarkPhase(PostConsensusPhase).
-		StopIfNotPostConsensusMessage().
-		StopIfNotDecided().
+		Add(NotPostConsensusMessageStop).
+		Add(NotDecidedStop).
 		Add(ValidatePartialSignatureForSlot).
 		Add(VerifyExpectedRoots).
 		Add(AddPostConsensusMessage).
-		StopIfNoPartialSigQuorum(types.PostConsensusPartialSig).
+		Add(NoQuorumStop(types.PostConsensusPartialSig)).
 		Add(ReconstructAttestationData).
 		Add(pipeline.BroadcastBeacon).
 
 		// ##### end phase #####
-		MarkPhase(EndPhase)
+		MarkPhase(pipeline.EndPhase)
+
+	return ret, ret.Init()
 }
 
 // ReconstructAttestationData reconstructs valid signed attestation and returns it
@@ -49,8 +61,30 @@ func ReconstructAttestationData(pipeline *pipeline.Pipeline, objects ...interfac
 
 // DecideOnAttestationData takes as input proposed attestation data, constructs consensus data and starts a qbft instance
 func DecideOnAttestationData(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
-	// if no pre consensus quorum, return stop
+	// already running
+	if pipeline.Instance != nil {
+		return nil, objects
+	}
 
-	// iterate all roots, reconstruct signature and return
-	return nil, []interface{}{}
+	// TODO - get attestation data
+	attData := &phase0.AttestationData{}
+	byts, err := attData.MarshalSSZ()
+	if err != nil {
+		return err, nil
+	}
+
+	input := &types.ConsensusData{
+		Duty:        pipeline.Runner.State.StartingDuty,
+		DataVersion: 0,
+		DataSSZ:     byts,
+	}
+
+	pipeline.Instance = qbft.NewInstance(input, pipeline.Runner.Share, pipeline.Runner.State.StartingDuty.Slot, pipeline.Runner.State.StartingDuty.Role)
+	// start the instance
+	_, err = qbft2.NewQBFTPipelineFromInstance(pipeline.Instance)
+	if err != nil {
+		return err, nil
+	}
+
+	return nil, objects
 }

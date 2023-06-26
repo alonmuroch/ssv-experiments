@@ -8,13 +8,13 @@ import (
 
 func FullFlow() *process.SpecTest {
 	msg := []*qbft.SignedMessage{
-		fixtures.QBFTSignedMessage(1, 1, qbft.ProposalMessageType),
-		fixtures.QBFTSignedMessage(1, 1, qbft.PrepareMessageType),
-		fixtures.QBFTSignedMessage(2, 1, qbft.PrepareMessageType),
-		fixtures.QBFTSignedMessage(3, 1, qbft.PrepareMessageType),
-		fixtures.QBFTSignedMessage(1, 1, qbft.CommitMessageType),
-		fixtures.QBFTSignedMessage(2, 1, qbft.CommitMessageType),
-		fixtures.QBFTSignedMessage(3, 1, qbft.CommitMessageType),
+		fixtures.QBFTSignedMessage(1, qbft.FirstRound, qbft.ProposalMessageType),
+		fixtures.QBFTSignedMessage(1, qbft.FirstRound, qbft.PrepareMessageType),
+		fixtures.QBFTSignedMessage(2, qbft.FirstRound, qbft.PrepareMessageType),
+		fixtures.QBFTSignedMessage(3, qbft.FirstRound, qbft.PrepareMessageType),
+		fixtures.QBFTSignedMessage(1, qbft.FirstRound, qbft.CommitMessageType),
+		fixtures.QBFTSignedMessage(2, qbft.FirstRound, qbft.CommitMessageType),
+		fixtures.QBFTSignedMessage(3, qbft.FirstRound, qbft.CommitMessageType),
 	}
 
 	return &process.SpecTest{

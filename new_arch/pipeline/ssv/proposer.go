@@ -7,46 +7,48 @@ import (
 	"ssv-experiments/new_arch/types"
 )
 
-func NewProposerRunnerForDuty(runner *ssv.Runner) *pipeline.Pipeline {
-	return NewPipeline(runner).
+func NewProposerRunnerForDuty(runner *ssv.Runner) (*pipeline.Pipeline, error) {
+	ret := pipeline.NewPipeline()
+	ret.Runner = runner
+	ret.
 		Add(pipeline.DecodeMessage).
 
 		// ##### pre consensus phase #####
 		MarkPhase(PreConsensusPhase).
-		SkipIfNotPreConsensusMessage(ConsensusPhase).
+		Add(NotPreConsensusMessageSkip).
 		Add(ValidatePartialSignatureForSlot).
 		Add(VerifyExpectedRoots).
 		Add(AddPostConsensusMessage).
-		StopIfNoPartialSigQuorum(types.RandaoPartialSig).
+		Add(NoQuorumStop(types.RandaoPartialSig)).
 		Add(ReconstructRandao).
 		Add(FetchProposedBlock).
 		Add(DecideOnBlock).
 
 		// ##### consensus phase #####
 		MarkPhase(ConsensusPhase).
-		SkipIfNotConsensusMessage(PostConsensusPhase).
-		StopINoPreConsensusQuorum().
+		Add(NotQBFTMessageSkip(PostConsensusPhase)).
+		Add(NotPreConsensusQuorumStop).
 		Add(QBFTProcessMessage).
 		Add(ValidateDecidedValue(func(data *types.ConsensusData) error {
 			return nil
 		})).
-		Add(SignBeaconObject).
-		Add(ConstructPostConsensusMessage(types.PostConsensusPartialSig)).
+		Add(SignBeaconObject(types.PostConsensusPartialSig)).
 		Add(pipeline.Broadcast(p2p.SSVPartialSignatureMsgType)).
 
 		// ##### post consensus phase #####
 		MarkPhase(PostConsensusPhase).
-		StopIfNotPostConsensusMessage().
-		StopIfNotDecided().
+		Add(NotPostConsensusMessageStop).
+		Add(NotDecidedStop).
 		Add(ValidatePartialSignatureForSlot).
 		Add(VerifyExpectedRoots).
 		Add(AddPostConsensusMessage).
-		StopIfNoPartialSigQuorum(types.PostConsensusPartialSig).
+		Add(NoQuorumStop(types.PostConsensusPartialSig)).
 		Add(ReconstructBlockData).
 		Add(pipeline.BroadcastBeacon).
 
 		// ##### end phase #####
-		MarkPhase(EndPhase)
+		MarkPhase(pipeline.EndPhase)
+	return ret, ret.Init()
 }
 
 // ReconstructBlockData reconstructs valid signed block and returns it.

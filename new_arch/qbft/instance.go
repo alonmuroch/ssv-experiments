@@ -19,6 +19,7 @@ type Instance struct {
 func NewInstance(data *types.ConsensusData, share *types.Share, height, role uint64) *Instance {
 	return &Instance{
 		State: &State{
+			Round:  FirstRound,
 			Height: height,
 		},
 		Share:      share,
@@ -52,22 +53,19 @@ func (i *Instance) ProcessMessage(msg *SignedMessage) (*SignedMessage, error) {
 
 // Decided returns true if decided.
 func (i *Instance) Decided() bool {
-	found, _ := i.DecidedRoot()
+	found, _, _ := i.DecidedRoot()
 	return found
 }
 
-func (i *Instance) DecidedRoot() (bool, [32]byte) {
+// DecidedRoot returns the root and messages that decided current round
+func (i *Instance) DecidedRoot() (bool, []*SignedMessage, [32]byte) {
 	byRoot := make(map[[32]byte][]*SignedMessage)
 
 	// batch messages by root. If exists a decided message return immediately
-	for _, m := range i.State.Messages {
-		if m.Message.MsgType != CommitMessageType {
-			continue
-		}
-
-		// if decided message return true
+	for _, m := range i.State.Messages.RoundAndType(i.State.Round, CommitMessageType) {
+		// decided message return true
 		if len(m.Signers) >= int(i.Share.Quorum) {
-			return true, m.Message.Root
+			return true, []*SignedMessage{m}, m.Message.Root
 		}
 
 		if byRoot[m.Message.Root] == nil {
@@ -79,8 +77,28 @@ func (i *Instance) DecidedRoot() (bool, [32]byte) {
 	// find if decided
 	for _, msgs := range byRoot {
 		if len(msgs) >= int(i.Share.Quorum) {
-			return true, msgs[0].Message.Root
+			return true, msgs, msgs[0].Message.Root
 		}
 	}
-	return false, [32]byte{}
+	return false, nil, [32]byte{}
+}
+
+// DecidedValue returns decided value for current round
+func (i *Instance) DecidedValue() ([]byte, error) {
+	decided, msgs, _ := i.DecidedRoot()
+	if !decided {
+		return nil, errors.New("not decided")
+	}
+
+	// single decided message
+	if len(msgs) == 1 {
+		return msgs[0].FullData, nil
+	}
+
+	// regular commit quorum
+	proposalMsgs := i.State.Messages.RoundAndType(i.State.Round, ProposalMessageType)
+	if len(proposalMsgs) != 1 {
+		return nil, errors.New("no valid proposal for round")
+	}
+	return proposalMsgs[0].FullData, nil
 }

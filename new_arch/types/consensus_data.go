@@ -1,5 +1,11 @@
 package types
 
+import (
+	"github.com/attestantio/go-eth2-client/spec/capella"
+	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/pkg/errors"
+)
+
 type ConsensusData struct {
 	// Duty max size is
 	// 			8 + 48 + 6*8 + 13*8 = 208 ~= 2^8
@@ -26,4 +32,25 @@ type ConsensusData struct {
 	// we can upper limit transactions to 2^21, together with the rest of the data 2*2^21 = 2^22 = 4,194,304 bytes
 	// Exmplanation on why transaction sizes are so big https://github.com/ethereum/consensus-specs/pull/2686
 	DataSSZ []byte `ssz-max:"4194304"` // 2^22
+}
+
+func (cd *ConsensusData) GetSigningRoot() ([32]byte, error) {
+	switch cd.Duty.Role {
+	case BeaconRoleAttester:
+		// TODO version support
+		ret := &phase0.AttestationData{}
+		if err := ret.UnmarshalSSZ(cd.DataSSZ); err != nil {
+			return [32]byte{}, err
+		}
+		return ret.HashTreeRoot()
+	case BeaconRoleProposer:
+		// TODO version support
+		ret := &capella.BeaconBlock{}
+		if err := ret.UnmarshalSSZ(cd.DataSSZ); err != nil {
+			return [32]byte{}, err
+		}
+		return ret.HashTreeRoot()
+	default:
+		return [32]byte{}, errors.New("unknown duty role")
+	}
 }
