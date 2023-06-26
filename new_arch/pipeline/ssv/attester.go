@@ -12,6 +12,7 @@ import (
 
 func NewAttesterPipeline(runner *ssv.Runner) (*pipeline.Pipeline, error) {
 	ret := pipeline.NewPipeline()
+	ret.Identifier = p2p.NewIdentifier(runner.State.StartingDuty.Slot, runner.State.StartingDuty.ValidatorPK, runner.State.StartingDuty.Role)
 	ret.Runner = runner
 	ret.
 		// ##### fetch attestation data and start QBFT instance #####
@@ -73,15 +74,18 @@ func DecideOnAttestationData(pipeline *pipeline.Pipeline, objects ...interface{}
 		return err, nil
 	}
 
-	input := &types.ConsensusData{
+	inputData := &types.ConsensusData{
 		Duty:        pipeline.Runner.State.StartingDuty,
 		DataVersion: 0,
 		DataSSZ:     byts,
 	}
 
-	pipeline.Instance = qbft.NewInstance(input, pipeline.Runner.Share, pipeline.Runner.State.StartingDuty.Slot, pipeline.Runner.State.StartingDuty.Role)
+	pipeline.Instance = qbft.NewInstance(inputData, pipeline.Runner.Share, pipeline.Runner.State.StartingDuty.Slot, pipeline.Runner.State.StartingDuty.Role)
 	// start the instance
-	_, err = qbft2.NewQBFTPipelineFromInstance(pipeline.Instance)
+	_, err = qbft2.NewQBFTPipelineFromInstance(
+		pipeline.Instance,
+		p2p.NewIdentifier(inputData.Duty.Slot, inputData.Duty.ValidatorPK, inputData.Duty.Role),
+	)
 	if err != nil {
 		return err, nil
 	}

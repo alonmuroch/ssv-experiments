@@ -2,7 +2,7 @@ package fixtures
 
 import "github.com/attestantio/go-eth2-client/spec/phase0"
 
-var Validator = [48]byte{}
+var ValidatorPK = [48]byte{}
 
 var AttestationData = &phase0.AttestationData{
 	Slot:            12,

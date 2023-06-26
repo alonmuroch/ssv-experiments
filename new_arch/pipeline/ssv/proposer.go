@@ -9,6 +9,7 @@ import (
 
 func NewProposerRunnerForDuty(runner *ssv.Runner) (*pipeline.Pipeline, error) {
 	ret := pipeline.NewPipeline()
+	ret.Identifier = p2p.NewIdentifier(runner.State.StartingDuty.Slot, runner.State.StartingDuty.ValidatorPK, runner.State.StartingDuty.Role)
 	ret.Runner = runner
 	ret.
 		Add(pipeline.DecodeMessage).

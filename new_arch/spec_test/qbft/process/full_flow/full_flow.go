@@ -25,7 +25,6 @@ func FullFlow() *process.SpecTest {
 				Messages: qbft.NewContainer(),
 			},
 			Share:      fixtures.Share,
-			Identifier: fixtures.Identifier,
 			StartValue: fixtures.AttesterConsensusData,
 		},
 		Post: &qbft.Instance{
@@ -36,7 +35,6 @@ func FullFlow() *process.SpecTest {
 				PreparedRound: 1,
 			},
 			Share:      fixtures.Share,
-			Identifier: fixtures.Identifier,
 			StartValue: fixtures.AttesterConsensusData,
 		},
 		Messages: msg,

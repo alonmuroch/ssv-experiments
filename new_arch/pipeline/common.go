@@ -8,6 +8,20 @@ import (
 	"ssv-experiments/new_arch/types"
 )
 
+// ValidateP2PMessage validates p2p message and returns error if not
+func ValidateP2PMessage(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
+	msg, ok := objects[0].(p2p.Message)
+	if !ok {
+		return errors.New("not a p2p message"), nil
+	}
+
+	id := msg.QuickLookIdentifier()
+	if !id.Equal(pipeline.Identifier) {
+		return errors.New("message doesn't belong to runner"), nil
+	}
+	return nil, objects
+}
+
 // DecodeMessage decodes a P2P message, error if can't
 func DecodeMessage(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 	msg, ok := objects[0].(*p2p.Message)
@@ -33,15 +47,10 @@ func DecodeMessage(pipeline *Pipeline, objects ...interface{}) (error, []interfa
 	}
 }
 
-type IBroadcastable interface {
-	GetIdentifier() [56]byte
-	ssz.Marshaler
-}
-
 // Broadcast will broadcast a message to the SSV network
 func Broadcast(t p2p.MsgType) func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
 	return func(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
-		data := objects[0].(IBroadcastable)
+		data := objects[0].(ssz.Marshaler)
 
 		byts, err := data.MarshalSSZ()
 		if err != nil {
@@ -50,7 +59,6 @@ func Broadcast(t p2p.MsgType) func(pipeline *Pipeline, objects ...interface{}) (
 
 		msg := &p2p.Message{
 			MsgType: t,
-			MsgID:   data.GetIdentifier(),
 			Data:    byts,
 		}
 

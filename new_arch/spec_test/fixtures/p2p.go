@@ -6,7 +6,7 @@ import (
 	"ssv-experiments/new_arch/types"
 )
 
-var Identifier = [56]byte{}
+var Identifier = p2p.NewIdentifier(Slot, ValidatorPK, types.BeaconRoleAttester)
 
 func P2PConsensusMessage(round, signer, msgType uint64) *p2p.Message {
 	m := &qbft.SignedMessage{

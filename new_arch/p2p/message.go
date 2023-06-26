@@ -1,6 +1,9 @@
 package p2p
 
-import "encoding/binary"
+import (
+	"bytes"
+	"encoding/binary"
+)
 
 type Identifier [56]byte
 
@@ -18,6 +21,10 @@ func NewIdentifier(slot uint64, validatorPK [48]byte, beaconRole uint64) Identif
 	return ret
 }
 
+func (id Identifier) Equal(other Identifier) bool {
+	return bytes.Equal(id[:], other[:])
+}
+
 type MsgType uint64
 
 const (
@@ -28,8 +35,13 @@ const (
 )
 
 type Message struct {
-	MsgType MsgType
-	MsgID   Identifier `ssz-size:"56"`
 	// Data max size is qbft SignedMessage max ~= 2^22 + 2^20 + 96 + 13 + 2^20 ~= 2^23
-	Data []byte `ssz-max:"8388608"` // 2^23
+	Data    []byte `ssz-max:"8388608"` // 2^23
+	MsgType MsgType
+}
+
+func (msg *Message) QuickLookIdentifier() Identifier {
+	ret := Identifier{}
+	copy(ret[:], msg.Data[:len(ret)])
+	return ret
 }

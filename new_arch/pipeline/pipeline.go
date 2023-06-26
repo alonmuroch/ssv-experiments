@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"github.com/pkg/errors"
+	"ssv-experiments/new_arch/p2p"
 	"ssv-experiments/new_arch/qbft"
 	"ssv-experiments/new_arch/ssv"
 )
@@ -28,10 +29,11 @@ const (
 type PipelineF func(pipeline *Pipeline, objects ...interface{}) (error, []interface{})
 
 type Pipeline struct {
-	Runner   *ssv.Runner
-	Instance *qbft.Instance
-	Items    []PipelineF
-	Phase    map[string]int // maps phase name to index
+	Identifier p2p.Identifier
+	Runner     *ssv.Runner
+	Instance   *qbft.Instance
+	Items      []PipelineF
+	Phase      map[string]int // maps phase name to index
 }
 
 func NewPipeline() *Pipeline {

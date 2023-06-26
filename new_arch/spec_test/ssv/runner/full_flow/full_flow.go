@@ -36,8 +36,7 @@ func FullFlow() *runner.SpecTest {
 				PartialSignatures: ssv.Container{},
 				StartingDuty:      fixtures.AttesterDuty,
 			},
-			Share:      fixtures.Share,
-			Identifier: fixtures.Identifier,
+			Share: fixtures.Share,
 		},
 		Post: &ssv.Runner{
 			State: &ssv.State{
@@ -49,8 +48,7 @@ func FullFlow() *runner.SpecTest {
 				DecidedValue: cdByts,
 				StartingDuty: fixtures.AttesterDuty,
 			},
-			Share:      fixtures.Share,
-			Identifier: fixtures.Identifier,
+			Share: fixtures.Share,
 		},
 		Messages: msg,
 	}

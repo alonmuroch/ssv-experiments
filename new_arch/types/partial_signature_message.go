@@ -31,9 +31,10 @@ type PartialSignatureMessage struct {
 }
 
 type PartialSignatureMessages struct {
+	// Identifier is at the top for quick identifier look (see docs)
+	Identifier p2p.Identifier `ssz-size:"56"` // instance Identifier this msg belongs to
 	Type       PartialSigMsgType
 	Slot       uint64
-	Identifier p2p.Identifier             `ssz-size:"56"` // instance Identifier this msg belongs to
 	Signatures []*PartialSignatureMessage `ssz-max:"13"`
 }
 
@@ -42,6 +43,7 @@ func (msg *PartialSignatureMessages) GetIdentifier() [56]byte {
 }
 
 type SignedPartialSignatureMessages struct {
+	// Message is at the top for quick identifier look (see docs)
 	Message   PartialSignatureMessages
 	Signature [96]byte `ssz-size:"96"`
 	Signer    uint64

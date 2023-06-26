@@ -1,6 +1,7 @@
 package ssv
 
 import (
+	"ssv-experiments/new_arch/p2p"
 	"ssv-experiments/new_arch/pipeline"
 	qbft2 "ssv-experiments/new_arch/pipeline/qbft"
 	"ssv-experiments/new_arch/qbft"
@@ -37,7 +38,7 @@ func SignBeaconObject(t types.PartialSigMsgType) func(pipeline *pipeline.Pipelin
 			Message: types.PartialSignatureMessages{
 				Type:       t,
 				Slot:       cd.Duty.Slot,
-				Identifier: pipeline.Runner.Identifier,
+				Identifier: pipeline.Identifier,
 				Signatures: []*types.PartialSignatureMessage{
 					{
 						Root:      r,
@@ -61,7 +62,10 @@ func QBFTProcessMessage(p *pipeline.Pipeline, objects ...interface{}) (error, []
 		prevDecided = true
 	}
 
-	qbftPipeline, err := qbft2.NewQBFTPipelineFromInstance(p.Instance)
+	qbftPipeline, err := qbft2.NewQBFTPipelineFromInstance(
+		p.Instance,
+		p2p.NewIdentifier(p.Runner.State.StartingDuty.Slot, p.Runner.State.StartingDuty.ValidatorPK, p.Runner.State.StartingDuty.Role),
+	)
 	if err != nil {
 		return err, nil
 	}

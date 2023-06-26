@@ -1,7 +1,6 @@
 package ssv
 
 import (
-	"ssv-experiments/new_arch/p2p"
 	"ssv-experiments/new_arch/types"
 )
 
@@ -10,15 +9,12 @@ type Runner struct {
 	State *State
 	// share is the share for the runner with which messages are verified and signed
 	Share *types.Share
-	// identifier identifies this particular runner
-	Identifier p2p.Identifier `ssz-size:"56"`
 }
 
 func NewRunner(share *types.Share, duty *types.Duty) *Runner {
 	return &Runner{
-		State:      NewState(duty),
-		Share:      share,
-		Identifier: p2p.NewIdentifier(duty.Slot, share.ValidatorPubKey, duty.Role),
+		State: NewState(duty),
+		Share: share,
 	}
 }
 

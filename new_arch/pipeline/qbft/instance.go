@@ -9,11 +9,12 @@ import (
 
 func NewQBFTPipeline(inputData *types.ConsensusData, share *types.Share) (*pipeline.Pipeline, error) {
 	instance := qbft.NewInstance(inputData, share, inputData.Duty.Role, inputData.Duty.Role)
-	return NewQBFTPipelineFromInstance(instance)
+	return NewQBFTPipelineFromInstance(instance, p2p.NewIdentifier(inputData.Duty.Slot, inputData.Duty.ValidatorPK, inputData.Duty.Role))
 }
 
-func NewQBFTPipelineFromInstance(instance *qbft.Instance) (*pipeline.Pipeline, error) {
+func NewQBFTPipelineFromInstance(instance *qbft.Instance, identifier p2p.Identifier) (*pipeline.Pipeline, error) {
 	ret := pipeline.NewPipeline()
+	ret.Identifier = identifier
 	ret.Instance = instance
 	ret.
 		// ##### propose if proposer #####
