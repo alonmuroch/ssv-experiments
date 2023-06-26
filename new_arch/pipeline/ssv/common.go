@@ -80,6 +80,8 @@ func QBFTProcessMessage(p *pipeline.Pipeline, objects ...interface{}) (error, []
 		return err, nil
 	}
 
+	p.Runner.State.DecidedValue = v
+
 	ret := &types.ConsensusData{}
 	if err := ret.UnmarshalSSZ(v); err != nil {
 		return err, nil

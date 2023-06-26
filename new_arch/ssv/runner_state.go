@@ -7,7 +7,10 @@ import (
 type State struct {
 	// PartialSignatures holds partial BLS signatures
 	PartialSignatures Container `ssz-max:"256"`
-	StartingDuty      *types.Duty
+	// DecidedValue holds the decided value set after consensus phase
+	// TODO - Set as []byte because of SSZ limitations if it was ConsensusData (needs to be set for ssz to encode)
+	DecidedValue []byte `ssz-max:"8388608"` // 2^23
+	StartingDuty *types.Duty
 }
 
 func NewState(duty *types.Duty) *State {

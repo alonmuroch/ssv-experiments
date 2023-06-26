@@ -24,6 +24,11 @@ func FullFlow() *runner.SpecTest {
 		fixtures.P2PPartialSignatureMessage(3, fixtures.Slot, types.PostConsensusPartialSig),
 	}
 
+	cdByts, err := fixtures.AttesterConsensusData.MarshalSSZ()
+	if err != nil {
+		panic(err.Error())
+	}
+
 	return &runner.SpecTest{
 		Role: types.BeaconRoleAttester,
 		Pre: &ssv.Runner{
@@ -36,8 +41,13 @@ func FullFlow() *runner.SpecTest {
 		},
 		Post: &ssv.Runner{
 			State: &ssv.State{
-				PartialSignatures: ssv.Container{},
-				StartingDuty:      fixtures.AttesterDuty,
+				PartialSignatures: ssv.Container{
+					fixtures.PartialSignatureMessage(1, fixtures.Slot, types.PostConsensusPartialSig),
+					fixtures.PartialSignatureMessage(2, fixtures.Slot, types.PostConsensusPartialSig),
+					fixtures.PartialSignatureMessage(3, fixtures.Slot, types.PostConsensusPartialSig),
+				},
+				DecidedValue: cdByts,
+				StartingDuty: fixtures.AttesterDuty,
 			},
 			Share:      fixtures.Share,
 			Identifier: fixtures.Identifier,
