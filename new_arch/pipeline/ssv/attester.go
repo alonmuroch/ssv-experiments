@@ -22,6 +22,7 @@ func NewAttesterPipeline(runner *ssv.Runner) (*pipeline.Pipeline, error) {
 
 		// ##### start #####
 		MarkPhase(pipeline.StartPhase).
+		Add(pipeline.ValidateP2PMessage).
 		Add(pipeline.DecodeMessage).
 
 		// ##### consensus phase #####

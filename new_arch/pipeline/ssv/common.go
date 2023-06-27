@@ -36,9 +36,8 @@ func SignBeaconObject(t types.PartialSigMsgType) func(pipeline *pipeline.Pipelin
 
 		m := &types.SignedPartialSignatureMessages{
 			Message: types.PartialSignatureMessages{
-				Type:       t,
-				Slot:       cd.Duty.Slot,
-				Identifier: pipeline.Identifier,
+				Type: t,
+				Slot: cd.Duty.Slot,
 				Signatures: []*types.PartialSignatureMessage{
 					{
 						Root:      r,

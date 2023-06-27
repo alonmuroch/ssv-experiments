@@ -12,6 +12,7 @@ func NewProposerRunnerForDuty(runner *ssv.Runner) (*pipeline.Pipeline, error) {
 	ret.Identifier = p2p.NewIdentifier(runner.State.StartingDuty.Slot, runner.State.StartingDuty.ValidatorPK, runner.State.StartingDuty.Role)
 	ret.Runner = runner
 	ret.
+		Add(pipeline.ValidateP2PMessage).
 		Add(pipeline.DecodeMessage).
 
 		// ##### pre consensus phase #####

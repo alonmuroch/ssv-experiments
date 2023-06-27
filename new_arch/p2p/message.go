@@ -35,13 +35,9 @@ const (
 )
 
 type Message struct {
+	// Identifier is at the top for quick identifier look (see docs)
+	Identifier Identifier `ssz-size:"56"` // instance Identifier this msg belongs to
 	// Data max size is qbft SignedMessage max ~= 2^22 + 2^20 + 96 + 13 + 2^20 ~= 2^23
 	Data    []byte `ssz-max:"8388608"` // 2^23
 	MsgType MsgType
-}
-
-func (msg *Message) QuickLookIdentifier() Identifier {
-	ret := Identifier{}
-	copy(ret[:], msg.Data[:len(ret)])
-	return ret
 }

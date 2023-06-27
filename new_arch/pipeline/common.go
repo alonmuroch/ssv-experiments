@@ -10,13 +10,12 @@ import (
 
 // ValidateP2PMessage validates p2p message and returns error if not
 func ValidateP2PMessage(pipeline *Pipeline, objects ...interface{}) (error, []interface{}) {
-	msg, ok := objects[0].(p2p.Message)
+	msg, ok := objects[0].(*p2p.Message)
 	if !ok {
 		return errors.New("not a p2p message"), nil
 	}
 
-	id := msg.QuickLookIdentifier()
-	if !id.Equal(pipeline.Identifier) {
+	if !msg.Identifier.Equal(pipeline.Identifier) {
 		return errors.New("message doesn't belong to runner"), nil
 	}
 	return nil, objects

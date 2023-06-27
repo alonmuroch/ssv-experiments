@@ -34,8 +34,9 @@ func P2PPartialSignatureMessage(signer, slot uint64, msgType types.PartialSigMsg
 	}
 
 	return &p2p.Message{
-		MsgType: p2p.SSVPartialSignatureMsgType,
-		Data:    byts,
+		Identifier: Identifier,
+		MsgType:    p2p.SSVPartialSignatureMsgType,
+		Data:       byts,
 	}
 }
 
@@ -47,7 +48,8 @@ func P2PQBFTSignedMessage(signer, round, msgType uint64) *p2p.Message {
 	}
 
 	return &p2p.Message{
-		MsgType: p2p.SSVConsensusMsgType,
-		Data:    byts,
+		Identifier: Identifier,
+		MsgType:    p2p.SSVConsensusMsgType,
+		Data:       byts,
 	}
 }

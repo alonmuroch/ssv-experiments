@@ -1,7 +1,6 @@
 package qbft
 
 import (
-	"bytes"
 	"github.com/pkg/errors"
 	"ssv-experiments/new_arch/pipeline"
 	"ssv-experiments/new_arch/qbft"
@@ -16,13 +15,9 @@ const (
 
 // ValidateConsensusMessage validates consensus message (type, struct, etc), returns error if not valid
 func ValidateConsensusMessage(pipeline *pipeline.Pipeline, objects ...interface{}) (error, []interface{}) {
-	msg, ok := objects[0].(*qbft.SignedMessage)
+	_, ok := objects[0].(*qbft.SignedMessage)
 	if !ok {
 		return errors.New("not a consensus message"), nil
-	}
-
-	if !bytes.Equal(msg.Message.Identifier[:], pipeline.Identifier[:]) {
-		return errors.New("invalid identifier"), nil
 	}
 
 	return nil, objects
