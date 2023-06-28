@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// SpecTest is a generic test struct runing and verifyin all tests with the goal of maximizing code and standard sharing between tests
+// SpecTest is a generic test struct running and verifying all tests with the goal of maximizing code and standard sharing between tests
 type SpecTest[T TestImpl] struct {
 	Test T
 }
