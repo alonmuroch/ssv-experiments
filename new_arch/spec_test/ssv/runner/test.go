@@ -1,6 +1,8 @@
 package runner
 
 import (
+	"encoding/hex"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 	"ssv-experiments/new_arch/p2p"
@@ -24,6 +26,10 @@ func (test *SpecTest) Test(t *testing.T) *spec_test.TestResult {
 	require.NoError(t, err)
 
 	for _, msg := range test.Messages {
+		byts, _ := msg.MarshalSSZ()
+		fmt.Printf("%s\n", hex.EncodeToString(byts))
+		break
+
 		err, _ := p.ProcessMessage(msg)
 		require.NoError(t, err)
 	}
