@@ -8,7 +8,9 @@ type QBFT struct {
 
 	// Messages is a unified (to all message type) container slice, simple and easy to serialize.
 	// All messages in the container are verified and authenticated
-	Messages []*SignedMessage `ssz-max:"256"`
+	Messages []*QBFTSignedMessage `ssz-max:"256"`
+
+	StartValue *ConsensusData
 }
 
 func (qbft *QBFT) DecidedValue() *ConsensusData {
@@ -21,4 +23,11 @@ type State struct {
 	// DecidedValue holds the decided value set after consensus phase
 	QBFT         *QBFT
 	StartingDuty *Duty
+}
+
+func NewState(duty *Duty) *State {
+	return &State{
+		StartingDuty:      duty,
+		PartialSignatures: []*SignedPartialSignatureMessages{},
+	}
 }

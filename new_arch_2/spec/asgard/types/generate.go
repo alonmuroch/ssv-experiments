@@ -1,5 +1,8 @@
 package types
 
+//go:generate rm -f ./p2p_message_encoding.go
+//go:generate go run github.com/ferranbt/fastssz/sszgen --path p2p_message.go  --exclude-objs Identifier,MsgType
+
 //go:generate rm -f ./consensus_data_encoding.go
 //go:generate go run github.com/ferranbt/fastssz/sszgen --path consensus_data.go --include ./duty.go,./partial_signature_message.go
 

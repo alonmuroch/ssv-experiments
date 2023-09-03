@@ -1,13 +1,11 @@
 package qbft
 
 import (
-	types2 "ssv-experiments/new_arch_2/spec/asgard/types"
+	types "ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
-type State types2.QBFT
-
-func (state *State) RoundAndType(round uint64, msgType uint64) []*types2.SignedMessage {
-	ret := make([]*types2.SignedMessage, 0)
+func RoundAndType(state *types.QBFT, round uint64, msgType uint64) []*types.QBFTSignedMessage {
+	ret := make([]*types.QBFTSignedMessage, 0)
 	for _, msg := range state.Messages {
 		if msg.Message.Round == round && msg.Message.MsgType == msgType {
 			ret = append(ret, msg)
@@ -16,6 +14,6 @@ func (state *State) RoundAndType(round uint64, msgType uint64) []*types2.SignedM
 	return ret
 }
 
-func (s *State) AddMessage(msg *types2.SignedMessage) {
-	s.Messages = append(s.Messages, msg)
+func AddMessage(state *types.QBFT, msg *types.QBFTSignedMessage) {
+	state.Messages = append(state.Messages, msg)
 }

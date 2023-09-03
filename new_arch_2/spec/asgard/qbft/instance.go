@@ -2,26 +2,30 @@ package qbft
 
 import (
 	"github.com/pkg/errors"
-	types2 "ssv-experiments/new_arch_2/spec/asgard/types"
+	types "ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
 const FirstRound = 1
 
 type Instance struct {
-	State      *State
-	Share      *types2.Share
-	StartValue *types2.ConsensusData
+	State      *types.QBFT
+	Share      *types.Share
+	StartValue *types.ConsensusData
 }
 
-func NewInstance(data *types2.ConsensusData, share *types2.Share, height, role uint64) *Instance {
+func NewInstance(data *types.ConsensusData, share *types.Share, height, role uint64) *Instance {
 	return &Instance{
-		State: &State{
+		State: &types.QBFT{
 			Round:  FirstRound,
 			Height: height,
 		},
 		Share:      share,
 		StartValue: data,
 	}
+}
+
+func ProcessMessage(state *types.QBFT, message *types.QBFTSignedMessage) error {
+	panic("implement")
 }
 
 func (i *Instance) IsFirstRound() bool {
@@ -39,7 +43,7 @@ func (i *Instance) proposerForRound(round uint64) uint64 {
 }
 
 // ProcessMessage processes the incoming message and returns an optional message to be broadcasted. Or error
-func (i *Instance) ProcessMessage(msg *types2.SignedMessage) (*types2.SignedMessage, error) {
+func (i *Instance) ProcessMessage(msg *types.QBFTSignedMessage) (*types.QBFTSignedMessage, error) {
 	// TODO process
 	return nil, nil
 }
@@ -51,18 +55,18 @@ func (i *Instance) Decided() bool {
 }
 
 // DecidedRoot returns the root and messages that decided current round
-func (i *Instance) DecidedRoot() (bool, []*types2.SignedMessage, [32]byte) {
-	byRoot := make(map[[32]byte][]*types2.SignedMessage)
+func (i *Instance) DecidedRoot() (bool, []*types.QBFTSignedMessage, [32]byte) {
+	byRoot := make(map[[32]byte][]*types.QBFTSignedMessage)
 
 	// batch messages by root. If exists a decided message return immediately
-	for _, m := range i.State.RoundAndType(i.State.Round, types2.CommitMessageType) {
+	for _, m := range RoundAndType(i.State, i.State.Round, types.CommitMessageType) {
 		// decided message return true
 		if len(m.Signers) >= int(i.Share.Quorum) {
-			return true, []*types2.SignedMessage{m}, m.Message.Root
+			return true, []*types.QBFTSignedMessage{m}, m.Message.Root
 		}
 
 		if byRoot[m.Message.Root] == nil {
-			byRoot[m.Message.Root] = []*types2.SignedMessage{}
+			byRoot[m.Message.Root] = []*types.QBFTSignedMessage{}
 		}
 		byRoot[m.Message.Root] = append(byRoot[m.Message.Root], m)
 	}
@@ -89,7 +93,7 @@ func (i *Instance) DecidedValue() ([]byte, error) {
 	}
 
 	// regular commit quorum
-	proposalMsgs := i.State.RoundAndType(i.State.Round, types2.ProposalMessageType)
+	proposalMsgs := RoundAndType(i.State, i.State.Round, types.ProposalMessageType)
 	if len(proposalMsgs) != 1 {
 		return nil, errors.New("no valid proposal for round")
 	}

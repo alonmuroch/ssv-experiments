@@ -11,8 +11,8 @@ This new spec architecture has the following improvements/ focus:
 
 ## The ethereum spec and tests as inspiration
 * Written in python, an assembly of structures and functions manipulating the states
-* 2 main (top) state mutating functions are [process_block](https://github.com/ethereum/consensus-specs/blob/dev/specs/phase0/beacon-chain.md#block-processing) and [process_epoch](https://github.com/ethereum/consensus-specs/blob/dev/specs/phase0/beacon-chain.md#epoch-processing)
-* All relevant functions for the above 2 functions are included in the spec (math, crypto, containers, etc)
+* The main state mutating function is [state_transition](https://github.com/ethereum/consensus-specs/blob/dev/specs/phase0/beacon-chain.md#beacon-chain-state-transition-function)
+* All relevant functions for the above function are included in the spec (math, crypto, containers, etc)
 * Per fork changes are seperated into different "specs"
 * The spec is not runnable
 * The tests package is runnable, producing spec tests, ssz encoded, with pre- and post-states
