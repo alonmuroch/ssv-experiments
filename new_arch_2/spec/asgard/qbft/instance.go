@@ -24,44 +24,63 @@ func NewInstance(data *types.ConsensusData, share *types.Share, height, role uin
 	}
 }
 
-func ProcessMessage(state *types.QBFT, message *types.QBFTSignedMessage) error {
-	panic("implement")
+func ProcessMessage(state *types.QBFT, share *types.Share, message *types.QBFTSignedMessage) error {
+	if !CanProcessMessages(state) {
+		return errors.New("can't process new messages")
+	}
+
+	if err := ValidateMessage(state, message); err != nil {
+		return err
+	}
+
+	switch message.Message.MsgType {
+	case types.ProposalMessageType:
+		return UponProposal(state, message)
+	case types.PrepareMessageType:
+		return UponPrepare(state, share, message)
+	case types.CommitMessageType:
+		return UponCommit(state, message)
+	case types.RoundChangeMessageType:
+		// TODO validRoundChangeForData
+		return nil
+	default:
+		return errors.New("unknown message type")
+	}
 }
 
-func (i *Instance) IsFirstRound() bool {
-	return i.State.Round == FirstRound
+// CanProcessMessages returns true if can process messages
+func CanProcessMessages(state *types.QBFT) bool {
+	return !state.Stopped && int(state.Round) < CutoffRound
 }
 
-// IsProposer returns true if propsoer for current round
-func (i *Instance) IsProposer() bool {
-	return i.proposerForRound(i.State.Round) == i.Share.OperatorID
+func IsFirstRound(state *types.QBFT) bool {
+	return state.Round == FirstRound
 }
 
-func (i *Instance) proposerForRound(round uint64) uint64 {
+// IsProposer returns true if proposer for current round
+func IsProposer(state *types.QBFT, share *types.Share) bool {
+	return proposerForRound(state.Round) == share.OperatorID
+}
+
+func proposerForRound(round uint64) uint64 {
 	// TODO round robin
 	return 1
 }
 
-// ProcessMessage processes the incoming message and returns an optional message to be broadcasted. Or error
-func (i *Instance) ProcessMessage(msg *types.QBFTSignedMessage) (*types.QBFTSignedMessage, error) {
-	// TODO process
-	return nil, nil
-}
-
 // Decided returns true if decided.
-func (i *Instance) Decided() bool {
-	found, _, _ := i.DecidedRoot()
+func (i *Instance) Decided(state *types.QBFT, share *types.Share) bool {
+	found, _, _ := DecidedRoot(state, share)
 	return found
 }
 
 // DecidedRoot returns the root and messages that decided current round
-func (i *Instance) DecidedRoot() (bool, []*types.QBFTSignedMessage, [32]byte) {
+func DecidedRoot(state *types.QBFT, share *types.Share) (bool, []*types.QBFTSignedMessage, [32]byte) {
 	byRoot := make(map[[32]byte][]*types.QBFTSignedMessage)
 
 	// batch messages by root. If exists a decided message return immediately
-	for _, m := range RoundAndType(i.State, i.State.Round, types.CommitMessageType) {
+	for _, m := range RoundAndType(state, state.Round, types.CommitMessageType) {
 		// decided message return true
-		if len(m.Signers) >= int(i.Share.Quorum) {
+		if len(m.Signers) >= int(share.Quorum) {
 			return true, []*types.QBFTSignedMessage{m}, m.Message.Root
 		}
 
@@ -73,7 +92,7 @@ func (i *Instance) DecidedRoot() (bool, []*types.QBFTSignedMessage, [32]byte) {
 
 	// find if decided
 	for _, msgs := range byRoot {
-		if len(msgs) >= int(i.Share.Quorum) {
+		if len(msgs) >= int(share.Quorum) {
 			return true, msgs, msgs[0].Message.Root
 		}
 	}
@@ -81,8 +100,8 @@ func (i *Instance) DecidedRoot() (bool, []*types.QBFTSignedMessage, [32]byte) {
 }
 
 // DecidedValue returns decided value for current round
-func (i *Instance) DecidedValue() ([]byte, error) {
-	decided, msgs, _ := i.DecidedRoot()
+func DecidedValue(state *types.QBFT, share *types.Share) ([]byte, error) {
+	decided, msgs, _ := DecidedRoot(state, share)
 	if !decided {
 		return nil, errors.New("not decided")
 	}
@@ -93,7 +112,7 @@ func (i *Instance) DecidedValue() ([]byte, error) {
 	}
 
 	// regular commit quorum
-	proposalMsgs := RoundAndType(i.State, i.State.Round, types.ProposalMessageType)
+	proposalMsgs := RoundAndType(state, state.Round, types.ProposalMessageType)
 	if len(proposalMsgs) != 1 {
 		return nil, errors.New("no valid proposal for round")
 	}

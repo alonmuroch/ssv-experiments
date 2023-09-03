@@ -4,15 +4,15 @@ import (
 	"ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
-func (i *Instance) UponProposal(msg *types.SignedMessage) error {
+func UponProposal(state *types.QBFT, msg *types.QBFTSignedMessage) error {
 	// TOOD implement
-	i.State.AddMessage(msg)
+	AddMessage(state, msg)
 	return nil
 }
 
-func (i *Instance) CreateProposalMessage() (*types.Message, error) {
+func (i *Instance) CreateProposalMessage() (*types.QBFTMessage, error) {
 	// TODO implement
-	return &types.Message{
+	return &types.QBFTMessage{
 		Round:   i.State.Round,
 		MsgType: types.ProposalMessageType,
 	}, nil

@@ -10,7 +10,11 @@ type QBFT struct {
 	// All messages in the container are verified and authenticated
 	Messages []*QBFTSignedMessage `ssz-max:"256"`
 
+	// StartValue used to propose (when leader) unless already prepared previously
 	StartValue *ConsensusData
+
+	// Stopped when true, can't process any messages
+	Stopped bool
 }
 
 func (qbft *QBFT) DecidedValue() *ConsensusData {

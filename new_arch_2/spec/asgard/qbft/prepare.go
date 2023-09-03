@@ -4,29 +4,29 @@ import (
 	"ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
-func (i *Instance) UponPrepare(msg *types.SignedMessage) error {
+func UponPrepare(state *types.QBFT, share *types.Share, msg *types.QBFTSignedMessage) error {
 	// TOOD implement
-	i.State.AddMessage(msg)
+	AddMessage(state, msg)
 
-	prepareMsg := i.State.RoundAndType(i.State.Round, types.PrepareMessageType)
-	if len(prepareMsg) >= int(i.Share.Quorum) {
-		i.State.PreparedRound = i.State.Round
+	prepareMsg := RoundAndType(state, state.Round, types.PrepareMessageType)
+	if len(prepareMsg) >= int(share.Quorum) {
+		state.PreparedRound = state.Round
 	}
 
 	return nil
 }
 
 // CreatePrepareMessage returns unsigned prepare message
-func (i *Instance) CreatePrepareMessage() (*types.Message, error) {
+func (i *Instance) CreatePrepareMessage() (*types.QBFTMessage, error) {
 	// TODO implement
-	return &types.Message{
+	return &types.QBFTMessage{
 		Round:   i.State.Round,
 		MsgType: types.PrepareMessageType,
 	}, nil
 }
 
 func (i *Instance) PrepareQuorum() bool {
-	all := i.State.RoundAndType(i.State.Round, types.PrepareMessageType)
+	all := RoundAndType(i.State, i.State.Round, types.PrepareMessageType)
 	if len(all) >= int(i.Share.Quorum) {
 		return true
 	}
