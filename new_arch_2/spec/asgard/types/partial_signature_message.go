@@ -1,5 +1,7 @@
 package types
 
+import "github.com/pkg/errors"
+
 type PartialSigMsgType uint64
 
 func (t PartialSigMsgType) IsPreConsensusType() bool {
@@ -34,9 +36,25 @@ type PartialSignatureMessages struct {
 	Signatures []*PartialSignatureMessage `ssz-max:"13"`
 }
 
+func (msgs PartialSignatureMessages) Validate() error {
+	if len(msgs.Signatures) == 0 {
+		return errors.New("no PartialSignatureMessages messages")
+	}
+
+	return nil
+}
+
 type SignedPartialSignatureMessages struct {
 	// Message is at the top for quick identifier look (see docs)
 	Message   PartialSignatureMessages
 	Signature [96]byte `ssz-size:"96"`
 	Signer    uint64
+}
+
+func (spcsm *SignedPartialSignatureMessages) Validate() error {
+	if spcsm.Signer == 0 {
+		return errors.New("signer ID 0 not allowed")
+	}
+
+	return spcsm.Message.Validate()
 }

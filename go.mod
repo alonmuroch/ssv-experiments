@@ -3,7 +3,7 @@ module ssv-experiments
 go 1.18
 
 require (
-	github.com/attestantio/go-eth2-client v0.14.5
+	github.com/attestantio/go-eth2-client v0.16.3 // if version is changed, types/generate.go needs adjustment
 	github.com/ethereum/go-ethereum v1.10.21
 	github.com/ferranbt/fastssz v0.1.3
 	github.com/golang/snappy v0.0.4

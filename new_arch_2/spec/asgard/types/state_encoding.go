@@ -219,7 +219,7 @@ func (s *State) MarshalSSZ() ([]byte, error) {
 // MarshalSSZTo ssz marshals the State object to a target array
 func (s *State) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 	dst = buf
-	offset := int(72)
+	offset := int(104)
 
 	// Offset (0) 'PartialSignatures'
 	dst = ssz.WriteOffset(dst, offset)
@@ -273,7 +273,7 @@ func (s *State) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 func (s *State) UnmarshalSSZ(buf []byte) error {
 	var err error
 	size := uint64(len(buf))
-	if size < 72 {
+	if size < 104 {
 		return ssz.ErrSize
 	}
 
@@ -285,7 +285,7 @@ func (s *State) UnmarshalSSZ(buf []byte) error {
 		return ssz.ErrOffset
 	}
 
-	if o0 < 72 {
+	if o0 < 104 {
 		return ssz.ErrInvalidVariableOffset
 	}
 
@@ -298,7 +298,7 @@ func (s *State) UnmarshalSSZ(buf []byte) error {
 	if s.StartingDuty == nil {
 		s.StartingDuty = new(Duty)
 	}
-	if err = s.StartingDuty.UnmarshalSSZ(buf[8:72]); err != nil {
+	if err = s.StartingDuty.UnmarshalSSZ(buf[8:104]); err != nil {
 		return err
 	}
 
@@ -339,7 +339,7 @@ func (s *State) UnmarshalSSZ(buf []byte) error {
 
 // SizeSSZ returns the ssz encoded size in bytes for the State object
 func (s *State) SizeSSZ() (size int) {
-	size = 72
+	size = 104
 
 	// Field (0) 'PartialSignatures'
 	for ii := 0; ii < len(s.PartialSignatures); ii++ {

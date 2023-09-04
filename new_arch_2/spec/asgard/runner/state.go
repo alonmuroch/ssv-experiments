@@ -4,6 +4,11 @@ import (
 	types "ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
+// Role returns the state's beacon role
+func Role(state *types.State) uint64 {
+	return state.StartingDuty.Role
+}
+
 func AllPreConsensus(state *types.State) []*types.SignedPartialSignatureMessages {
 	ret := make([]*types.SignedPartialSignatureMessages, 0)
 	for _, m := range state.PartialSignatures {
