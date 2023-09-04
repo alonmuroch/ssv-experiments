@@ -5,23 +5,6 @@ import (
 	types "ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
-type Instance struct {
-	State      *types.QBFT
-	Share      *types.Share
-	StartValue *types.ConsensusData
-}
-
-func NewInstance(data *types.ConsensusData, share *types.Share, height, role uint64) *Instance {
-	return &Instance{
-		State: &types.QBFT{
-			Round:  FirstRound,
-			Height: height,
-		},
-		Share:      share,
-		StartValue: data,
-	}
-}
-
 func ProcessMessage(state *types.QBFT, share *types.Share, message *types.QBFTSignedMessage) error {
 	if !CanProcessMessages(state) {
 		return errors.New("can't process new messages")
@@ -63,12 +46,6 @@ func IsProposer(state *types.QBFT, share *types.Share) bool {
 func proposerForRound(round uint64) uint64 {
 	// TODO round robin
 	return 1
-}
-
-// Decided returns true if decided.
-func (i *Instance) Decided(state *types.QBFT, share *types.Share) bool {
-	found, _, _ := DecidedRoot(state, share)
-	return found
 }
 
 // DecidedRoot returns the root and messages that decided current round

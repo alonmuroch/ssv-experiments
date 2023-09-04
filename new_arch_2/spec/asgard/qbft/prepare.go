@@ -17,17 +17,17 @@ func UponPrepare(state *types.QBFT, share *types.Share, msg *types.QBFTSignedMes
 }
 
 // CreatePrepareMessage returns unsigned prepare message
-func (i *Instance) CreatePrepareMessage() (*types.QBFTMessage, error) {
+func CreatePrepareMessage(state *types.QBFT) (*types.QBFTMessage, error) {
 	// TODO implement
 	return &types.QBFTMessage{
-		Round:   i.State.Round,
+		Round:   state.Round,
 		MsgType: types.PrepareMessageType,
 	}, nil
 }
 
-func (i *Instance) PrepareQuorum() bool {
-	all := RoundAndType(i.State, i.State.Round, types.PrepareMessageType)
-	if len(all) >= int(i.Share.Quorum) {
+func PrepareQuorum(state *types.QBFT, share *types.Share) bool {
+	all := RoundAndType(state, state.Round, types.PrepareMessageType)
+	if len(all) >= int(share.Quorum) {
 		return true
 	}
 	return false

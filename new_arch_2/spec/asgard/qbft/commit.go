@@ -10,17 +10,17 @@ func UponCommit(state *types.QBFT, msg *types.QBFTSignedMessage) error {
 	return nil
 }
 
-func (i *Instance) CreateCommitMessage() (*types.QBFTMessage, error) {
+func CreateCommitMessage(state *types.QBFT) (*types.QBFTMessage, error) {
 	// TODO implement
 	return &types.QBFTMessage{
-		Round:   i.State.Round,
+		Round:   state.Round,
 		MsgType: types.CommitMessageType,
 	}, nil
 }
 
-func (i *Instance) CommitQuorum() bool {
-	all := RoundAndType(i.State, i.State.Round, types.CommitMessageType)
-	if len(all) >= int(i.Share.Quorum) {
+func CommitQuorum(state *types.QBFT, share *types.Share) bool {
+	all := RoundAndType(state, state.Round, types.CommitMessageType)
+	if len(all) >= int(share.Quorum) {
 		return true
 	}
 	return false

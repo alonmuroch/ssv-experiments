@@ -4,25 +4,25 @@ import (
 	"ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
-func (i *Instance) UponRoundChange(msg *types.SignedMessage) error {
+func UponRoundChange(msg *types.QBFTSignedMessage) error {
 	panic("implement")
 }
 
-func (i *Instance) CreateRoundChangeMessage() (*types.SignedMessage, error) {
+func CreateRoundChangeMessage() (*types.QBFTSignedMessage, error) {
 	panic("implement")
 }
 
-func (i *Instance) RoundChangeQuorum() bool {
-	all := i.State.RoundAndType(i.State.Round, types.RoundChangeMessageType)
-	if len(all) >= int(i.Share.Quorum) {
+func RoundChangeQuorum(state *types.QBFT, share *types.Share) bool {
+	all := RoundAndType(state, state.Round, types.RoundChangeMessageType)
+	if len(all) >= int(share.Quorum) {
 		return true
 	}
 	return false
 }
 
-func (i *Instance) RoundChangePartialQuorum() bool {
-	all := i.State.RoundAndType(i.State.Round, types.RoundChangeMessageType)
-	if len(all) >= int(i.Share.PartialQuorum) {
+func RoundChangePartialQuorum(state *types.QBFT, share *types.Share) bool {
+	all := RoundAndType(state, state.Round, types.RoundChangeMessageType)
+	if len(all) >= int(share.PartialQuorum) {
 		return true
 	}
 	return false
