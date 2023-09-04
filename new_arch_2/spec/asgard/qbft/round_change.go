@@ -8,7 +8,7 @@ func UponRoundChange(msg *types.QBFTSignedMessage) error {
 	panic("implement")
 }
 
-func CreateRoundChangeMessage() (*types.QBFTSignedMessage, error) {
+func CreateRoundChangeMessage(state *types.QBFT) (*types.QBFTMessage, error) {
 	panic("implement")
 }
 

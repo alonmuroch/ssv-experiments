@@ -6,6 +6,8 @@ type QBFT struct {
 
 	PreparedRound uint64
 
+	ProposalAcceptedForCurrentRound *QBFTSignedMessage
+
 	// Messages is a unified (to all message type) container slice, simple and easy to serialize.
 	// All messages in the container are verified and authenticated
 	Messages []*QBFTSignedMessage `ssz-max:"256"`
