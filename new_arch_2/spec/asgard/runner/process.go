@@ -5,7 +5,6 @@ import (
 	ssz "github.com/ferranbt/fastssz"
 	"github.com/herumi/bls-eth-go-binary/bls"
 	"github.com/pkg/errors"
-	"sort"
 	types "ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
@@ -23,11 +22,11 @@ func ProcessMessage(state *types.State, share *types.Share, message *types.Signe
 	case types.RandaoPartialSig:
 		return ProcessRandao(state, share, message)
 	case types.SelectionProofPartialSig:
-		return nil
+		return errors.New("not supported")
 	case types.ContributionProofs:
-		return nil
+		return errors.New("not supported")
 	case types.ValidatorRegistrationPartialSig:
-		return nil
+		return errors.New("not supported")
 	default:
 		return errors.New("unknown message type")
 	}
@@ -147,7 +146,7 @@ func verifyBeaconPartialSignature(signer uint64, share *types.Share, msg *types.
 	return errors.New("unknown signer")
 }
 
-// verifyExpectedRoots verifies signed roots equal to expected roots
+// verifyExpectedRoots verifies signed roots equal to expected roots, requires order
 func verifyExpectedRoots(
 	signedMessage *types.SignedPartialSignatureMessages,
 	expectedRootObjs []ssz.HashRoot,
@@ -158,7 +157,7 @@ func verifyExpectedRoots(
 	}
 
 	// convert expected roots to map and mark unique roots when verified
-	sortedExpectedRoots, err := func(expectedRootObjs []ssz.HashRoot) ([][32]byte, error) {
+	expectedRoots, err := func(expectedRootObjs []ssz.HashRoot) ([][32]byte, error) {
 		ret := make([][32]byte, 0)
 		for _, rootI := range expectedRootObjs {
 			r, err := types.ComputeETHSigningRoot(rootI, domainData)
@@ -167,31 +166,23 @@ func verifyExpectedRoots(
 			}
 			ret = append(ret, r)
 		}
-
-		sort.Slice(ret, func(i, j int) bool {
-			return string(ret[i][:]) < string(ret[j][:])
-		})
 		return ret, nil
 	}(expectedRootObjs)
 	if err != nil {
 		return err
 	}
 
-	sortedRoots := func(msgs types.PartialSignatureMessages) [][32]byte {
+	roots := func(msgs types.PartialSignatureMessages) [][32]byte {
 		ret := make([][32]byte, 0)
 		for _, msg := range msgs.Signatures {
 			ret = append(ret, msg.Root)
 		}
-
-		sort.Slice(ret, func(i, j int) bool {
-			return string(ret[i][:]) < string(ret[j][:])
-		})
 		return ret
 	}(signedMessage.Message)
 
 	// verify roots
-	for i, r := range sortedRoots {
-		if !bytes.Equal(sortedExpectedRoots[i][:], r[:]) {
+	for i, r := range roots {
+		if !bytes.Equal(expectedRoots[i][:], r[:]) {
 			return errors.New("wrong signing root")
 		}
 	}

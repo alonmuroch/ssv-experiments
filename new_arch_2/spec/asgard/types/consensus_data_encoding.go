@@ -15,15 +15,14 @@ func (c *ConsensusData) MarshalSSZ() ([]byte, error) {
 // MarshalSSZTo ssz marshals the ConsensusData object to a target array
 func (c *ConsensusData) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 	dst = buf
-	offset := int(112)
+	offset := int(20)
 
-	// Field (0) 'Duty'
+	// Offset (0) 'Duty'
+	dst = ssz.WriteOffset(dst, offset)
 	if c.Duty == nil {
 		c.Duty = new(Duty)
 	}
-	if dst, err = c.Duty.MarshalSSZTo(dst); err != nil {
-		return
-	}
+	offset += c.Duty.SizeSSZ()
 
 	// Field (1) 'DataVersion'
 	dst = ssz.MarshalUint64(dst, c.DataVersion)
@@ -38,6 +37,11 @@ func (c *ConsensusData) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 	// Offset (3) 'DataSSZ'
 	dst = ssz.WriteOffset(dst, offset)
 	offset += len(c.DataSSZ)
+
+	// Field (0) 'Duty'
+	if dst, err = c.Duty.MarshalSSZTo(dst); err != nil {
+		return
+	}
 
 	// Field (2) 'PreConsensusJustification'
 	if size := len(c.PreConsensusJustification); size > 13 {
@@ -71,36 +75,44 @@ func (c *ConsensusData) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 func (c *ConsensusData) UnmarshalSSZ(buf []byte) error {
 	var err error
 	size := uint64(len(buf))
-	if size < 112 {
+	if size < 20 {
 		return ssz.ErrSize
 	}
 
 	tail := buf
-	var o2, o3 uint64
+	var o0, o2, o3 uint64
 
-	// Field (0) 'Duty'
-	if c.Duty == nil {
-		c.Duty = new(Duty)
-	}
-	if err = c.Duty.UnmarshalSSZ(buf[0:96]); err != nil {
-		return err
-	}
-
-	// Field (1) 'DataVersion'
-	c.DataVersion = ssz.UnmarshallUint64(buf[96:104])
-
-	// Offset (2) 'PreConsensusJustification'
-	if o2 = ssz.ReadOffset(buf[104:108]); o2 > size {
+	// Offset (0) 'Duty'
+	if o0 = ssz.ReadOffset(buf[0:4]); o0 > size {
 		return ssz.ErrOffset
 	}
 
-	if o2 < 112 {
+	if o0 < 20 {
 		return ssz.ErrInvalidVariableOffset
 	}
 
-	// Offset (3) 'DataSSZ'
-	if o3 = ssz.ReadOffset(buf[108:112]); o3 > size || o2 > o3 {
+	// Field (1) 'DataVersion'
+	c.DataVersion = ssz.UnmarshallUint64(buf[4:12])
+
+	// Offset (2) 'PreConsensusJustification'
+	if o2 = ssz.ReadOffset(buf[12:16]); o2 > size || o0 > o2 {
 		return ssz.ErrOffset
+	}
+
+	// Offset (3) 'DataSSZ'
+	if o3 = ssz.ReadOffset(buf[16:20]); o3 > size || o2 > o3 {
+		return ssz.ErrOffset
+	}
+
+	// Field (0) 'Duty'
+	{
+		buf = tail[o0:o2]
+		if c.Duty == nil {
+			c.Duty = new(Duty)
+		}
+		if err = c.Duty.UnmarshalSSZ(buf); err != nil {
+			return err
+		}
 	}
 
 	// Field (2) 'PreConsensusJustification'
@@ -141,7 +153,13 @@ func (c *ConsensusData) UnmarshalSSZ(buf []byte) error {
 
 // SizeSSZ returns the ssz encoded size in bytes for the ConsensusData object
 func (c *ConsensusData) SizeSSZ() (size int) {
-	size = 112
+	size = 20
+
+	// Field (0) 'Duty'
+	if c.Duty == nil {
+		c.Duty = new(Duty)
+	}
+	size += c.Duty.SizeSSZ()
 
 	// Field (2) 'PreConsensusJustification'
 	for ii := 0; ii < len(c.PreConsensusJustification); ii++ {
@@ -165,9 +183,6 @@ func (c *ConsensusData) HashTreeRootWith(hh ssz.HashWalker) (err error) {
 	indx := hh.Index()
 
 	// Field (0) 'Duty'
-	if c.Duty == nil {
-		c.Duty = new(Duty)
-	}
 	if err = c.Duty.HashTreeRootWith(hh); err != nil {
 		return
 	}

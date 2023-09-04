@@ -1,7 +1,9 @@
 package types
 
 import (
+	"github.com/attestantio/go-eth2-client/spec/phase0"
 	ssz "github.com/ferranbt/fastssz"
+	"github.com/herumi/bls-eth-go-binary/bls"
 )
 
 type Signer struct {
@@ -29,4 +31,11 @@ func VerifySignature(
 	signatureType SignatureType,
 	signers []*Signer) error {
 	panic("implement")
+}
+
+// SignToBLSSignature converts bls.Sign to spec.BLSSignature
+func SignToBLSSignature(in *bls.Sign) phase0.BLSSignature {
+	ret := phase0.BLSSignature{}
+	copy(ret[:], in.Serialize())
+	return ret
 }

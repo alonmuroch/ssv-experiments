@@ -20,14 +20,14 @@ This new spec architecture has the following improvements/ focus:
 
 ## Overview
 
-### Pipeline - Separating functionality and message processing flow
-The current SSV spec is a mini program that has as input P2P messages and as output P2P messages. In the middle we have state mutation. This is also known as Message-State-Message(MSM) paradigm.
+### Node & Client
+To simplify the spec and minimize all "implementation" specific code, the new spec architecture supports a node & client approach (like eth2).
 
-**P2P Message -> State Mutation -> P2P Message**
+There is a single function call for all message processing called [ProcessMessage](./spec/asgard/process.go) which takes a [P2P Message](./spec/asgard/types/p2p_message.go) and calls subsequent qbft/ runner process messages. [ProcessMessage](./spec/asgard/process.go) is the entry point for the spec.
+All state changes happen within [ProcessMessage](./spec/asgard/process.go), or it returns error. 
 
-The problem it creates is introducing implementation details into the spec which are otherwise irrelevant.
+SSV reacts to incoming messages, broadcasting responses as needed. In the old spec, that was embedded as part of processing messages, resulting in various interfaces within the spec to later be implemented within the actual node. That created a lot of clutter.
+With this new design, when [ProcessMessage](./spec/asgard/process.go) is called, only the state changes. No outbound message broadcasting happens.
 
-This new architecture removes that coupling with the introduction of the [Pipeline](../new_arch/pipeline/pipeline.go).
-The Pipeline is a flow of functions which have standardized input and output, together forming the full MSM flow. The Pipeline is the implementation, simplistic pipelines can be used for spec tests and more sophisticated pipelines can be a full working node. 
-
-The Pipeline has the goal of manipulating the state. 2 seemingly different pipelines producing the same stat for the same set of messages can be considered equal
+The responsibility to react to state changes and broadcast responses is up to a [client](./spec/asgard/client.go) code which looks at the state and acts upon it.  
+This separation enables flexibility in implementation without coupling spec and implementation.

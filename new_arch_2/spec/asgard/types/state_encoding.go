@@ -219,7 +219,7 @@ func (s *State) MarshalSSZ() ([]byte, error) {
 // MarshalSSZTo ssz marshals the State object to a target array
 func (s *State) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 	dst = buf
-	offset := int(104)
+	offset := int(12)
 
 	// Offset (0) 'PartialSignatures'
 	dst = ssz.WriteOffset(dst, offset)
@@ -235,13 +235,12 @@ func (s *State) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 	}
 	offset += s.QBFT.SizeSSZ()
 
-	// Field (2) 'StartingDuty'
+	// Offset (2) 'StartingDuty'
+	dst = ssz.WriteOffset(dst, offset)
 	if s.StartingDuty == nil {
 		s.StartingDuty = new(Duty)
 	}
-	if dst, err = s.StartingDuty.MarshalSSZTo(dst); err != nil {
-		return
-	}
+	offset += s.StartingDuty.SizeSSZ()
 
 	// Field (0) 'PartialSignatures'
 	if size := len(s.PartialSignatures); size > 256 {
@@ -266,6 +265,11 @@ func (s *State) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 		return
 	}
 
+	// Field (2) 'StartingDuty'
+	if dst, err = s.StartingDuty.MarshalSSZTo(dst); err != nil {
+		return
+	}
+
 	return
 }
 
@@ -273,19 +277,19 @@ func (s *State) MarshalSSZTo(buf []byte) (dst []byte, err error) {
 func (s *State) UnmarshalSSZ(buf []byte) error {
 	var err error
 	size := uint64(len(buf))
-	if size < 104 {
+	if size < 12 {
 		return ssz.ErrSize
 	}
 
 	tail := buf
-	var o0, o1 uint64
+	var o0, o1, o2 uint64
 
 	// Offset (0) 'PartialSignatures'
 	if o0 = ssz.ReadOffset(buf[0:4]); o0 > size {
 		return ssz.ErrOffset
 	}
 
-	if o0 < 104 {
+	if o0 < 12 {
 		return ssz.ErrInvalidVariableOffset
 	}
 
@@ -294,12 +298,9 @@ func (s *State) UnmarshalSSZ(buf []byte) error {
 		return ssz.ErrOffset
 	}
 
-	// Field (2) 'StartingDuty'
-	if s.StartingDuty == nil {
-		s.StartingDuty = new(Duty)
-	}
-	if err = s.StartingDuty.UnmarshalSSZ(buf[8:104]); err != nil {
-		return err
+	// Offset (2) 'StartingDuty'
+	if o2 = ssz.ReadOffset(buf[8:12]); o2 > size || o1 > o2 {
+		return ssz.ErrOffset
 	}
 
 	// Field (0) 'PartialSignatures'
@@ -326,11 +327,22 @@ func (s *State) UnmarshalSSZ(buf []byte) error {
 
 	// Field (1) 'QBFT'
 	{
-		buf = tail[o1:]
+		buf = tail[o1:o2]
 		if s.QBFT == nil {
 			s.QBFT = new(QBFT)
 		}
 		if err = s.QBFT.UnmarshalSSZ(buf); err != nil {
+			return err
+		}
+	}
+
+	// Field (2) 'StartingDuty'
+	{
+		buf = tail[o2:]
+		if s.StartingDuty == nil {
+			s.StartingDuty = new(Duty)
+		}
+		if err = s.StartingDuty.UnmarshalSSZ(buf); err != nil {
 			return err
 		}
 	}
@@ -339,7 +351,7 @@ func (s *State) UnmarshalSSZ(buf []byte) error {
 
 // SizeSSZ returns the ssz encoded size in bytes for the State object
 func (s *State) SizeSSZ() (size int) {
-	size = 104
+	size = 12
 
 	// Field (0) 'PartialSignatures'
 	for ii := 0; ii < len(s.PartialSignatures); ii++ {
@@ -352,6 +364,12 @@ func (s *State) SizeSSZ() (size int) {
 		s.QBFT = new(QBFT)
 	}
 	size += s.QBFT.SizeSSZ()
+
+	// Field (2) 'StartingDuty'
+	if s.StartingDuty == nil {
+		s.StartingDuty = new(Duty)
+	}
+	size += s.StartingDuty.SizeSSZ()
 
 	return
 }
@@ -387,9 +405,6 @@ func (s *State) HashTreeRootWith(hh ssz.HashWalker) (err error) {
 	}
 
 	// Field (2) 'StartingDuty'
-	if s.StartingDuty == nil {
-		s.StartingDuty = new(Duty)
-	}
 	if err = s.StartingDuty.HashTreeRootWith(hh); err != nil {
 		return
 	}

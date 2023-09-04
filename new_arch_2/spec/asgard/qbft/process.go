@@ -5,8 +5,6 @@ import (
 	types "ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
-const FirstRound = 1
-
 type Instance struct {
 	State      *types.QBFT
 	Share      *types.Share

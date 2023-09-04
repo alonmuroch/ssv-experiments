@@ -10,10 +10,10 @@ func UponProposal(state *types.QBFT, msg *types.QBFTSignedMessage) error {
 	return nil
 }
 
-func (i *Instance) CreateProposalMessage() (*types.QBFTMessage, error) {
+func CreateProposalMessage(state *types.QBFT) (*types.QBFTMessage, error) {
 	// TODO implement
 	return &types.QBFTMessage{
-		Round:   i.State.Round,
+		Round:   state.Round,
 		MsgType: types.ProposalMessageType,
 	}, nil
 }
