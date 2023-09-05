@@ -60,3 +60,74 @@ func UponPostConsensusQuorum(state *types.State) (interface{}, error) {
 		return nil, errors.New("role not supported")
 	}
 }
+
+// UponProposal returns a prepare message for a valid proposal
+func UponProposal(state *types.QBFT) (*types.QBFTMessage, error) {
+	if !qbft.CanProcessMessages(state) {
+		return nil, errors.New("can't process events/ messages")
+	}
+
+	msg, err := qbft.CreatePrepareMessage(state)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// UponPrepareQuorum returns a commit message upon prepare quorum
+func UponPrepareQuorum(state *types.QBFT) (*types.QBFTMessage, error) {
+	if !qbft.CanProcessMessages(state) {
+		return nil, errors.New("can't process events/ messages")
+	}
+
+	msg, err := qbft.CreateCommitMessage(state)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// UponCommitQuorum moves to post consensus phase, returns an array of partial signature messages to sign and broadcast
+func UponCommitQuorum(state *types.State) ([]*types.PartialSignatureMessage, error) {
+	role := runner.Role(state)
+	switch role {
+	case types.BeaconRoleAttester:
+		return runner.UponAttesterDecided(state)
+	case types.BeaconRoleProposer:
+		return runner.UponProposerDecided(state)
+	default:
+		return nil, errors.New("role not supported")
+	}
+}
+
+// UponTimeout bumps round and returns round change for timer timeout
+func UponTimeout(state *types.QBFT) (*types.QBFTMessage, error) {
+	if !qbft.CanProcessMessages(state) {
+		return nil, errors.New("can't process events/ messages")
+	}
+
+	newRound := state.Round + 1
+	defer func() {
+		state.Round = newRound
+		state.ProposalAcceptedForCurrentRound = nil
+	}()
+
+	msg, err := qbft.CreateRoundChangeMessage(state)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+// UponRoundChangeQuorum broadcasts a proposal, if proposer, message upon round change quorum
+func UponRoundChangeQuorum(state *types.QBFT) error {
+	panic("implement")
+}
+
+// UponF1RoundChangeQuorum bumps round and broadcasts round change upon f+1 round changes
+func UponF1RoundChangeQuorum(state *types.QBFT) error {
+	panic("implement")
+}

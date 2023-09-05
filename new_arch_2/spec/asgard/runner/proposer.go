@@ -8,6 +8,34 @@ import (
 	"ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
+// UponProposerDecided returns an array of partial sig messages to be signed and broadcasted
+func UponProposerDecided(state *types.State) ([]*types.PartialSignatureMessage, error) {
+	cd := DecidedConsensusData(state)
+
+	var blkToSign ssz.HashRoot
+	var err error
+	if DecidedBlindedBlock(state) {
+		_, blkToSign, err = cd.GetBlindedBlockData()
+	} else {
+		_, blkToSign, err = cd.GetBlockData()
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	domainData := cd.Duty.DomainData
+	root, err := types.ComputeETHSigningRoot(blkToSign, domainData)
+	if err != nil {
+		return nil, err
+	}
+
+	return []*types.PartialSignatureMessage{
+		{
+			Root: root,
+		},
+	}, nil
+}
+
 // ReconstructBlock returns an object with the versioned block and reconstructed signature or error
 func ReconstructBlock(state *types.State) (interface{}, error) {
 	cd := DecidedConsensusData(state)

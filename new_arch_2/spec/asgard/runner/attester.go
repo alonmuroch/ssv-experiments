@@ -8,6 +8,27 @@ import (
 	"ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
+// UponAttesterDecided returns an array of partial sig messages to be signed and broadcasted
+func UponAttesterDecided(state *types.State) ([]*types.PartialSignatureMessage, error) {
+	cd := DecidedConsensusData(state)
+	attData, err := cd.GetAttestationData()
+	if err != nil {
+		return nil, err
+	}
+
+	domainData := cd.Duty.DomainData
+	root, err := types.ComputeETHSigningRoot(attData, domainData)
+	if err != nil {
+		return nil, err
+	}
+
+	return []*types.PartialSignatureMessage{
+		{
+			Root: root,
+		},
+	}, nil
+}
+
 func ReconstructAttestationData(state *types.State) (*phase0.Attestation, error) {
 	cd := DecidedConsensusData(state)
 	if cd == nil {
