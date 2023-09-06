@@ -23,11 +23,12 @@ func ValidateMessage(state *types.QBFT, share *types.Share, signedMessage *types
 	case types.ProposalMessageType:
 		return isValidProposal(state, share, signedMessage)
 	case types.PrepareMessageType:
-		// TODO validSignedPrepareForHeightRoundAndRoot
-		return nil
+		if state.ProposalAcceptedForCurrentRound == nil {
+			return errors.New("no proposal accepted for round")
+		}
+		return validSignedPrepareForHeightRoundAndRoot(share, signedMessage, state.Height, state.Round, state.ProposalAcceptedForCurrentRound.Message.Root)
 	case types.CommitMessageType:
-		// TODO validateCommit
-		return nil
+		return isValidCommit(state, share, signedMessage)
 	case types.RoundChangeMessageType:
 		// TODO validRoundChangeForData
 		return nil

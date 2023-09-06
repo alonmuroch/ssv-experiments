@@ -20,7 +20,7 @@ func ProcessMessage(state *types.QBFT, share *types.Share, signedMessage *types.
 	case types.PrepareMessageType:
 		return UponPrepare(state, share, signedMessage)
 	case types.CommitMessageType:
-		return UponCommit(state, signedMessage)
+		return UponCommit(state, share, signedMessage)
 	case types.RoundChangeMessageType:
 		// TODO validRoundChangeForData
 		return nil
