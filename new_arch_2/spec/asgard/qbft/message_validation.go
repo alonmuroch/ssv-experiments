@@ -5,19 +5,18 @@ import (
 	"ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
-func ValidateMessage(state *types.QBFT, message *types.QBFTSignedMessage) error {
-	if err := message.Validate(); err != nil {
+func ValidateMessage(state *types.QBFT, share *types.Share, signedMessage *types.QBFTSignedMessage) error {
+	if err := signedMessage.Validate(); err != nil {
 		return err
 	}
 
-	if message.Message.Round < state.Round {
+	if signedMessage.Message.Round < state.Round {
 		return errors.New("past round")
 	}
 
-	switch message.Message.MsgType {
+	switch signedMessage.Message.MsgType {
 	case types.ProposalMessageType:
-		// TODO isValidProposal
-		return nil
+		return isValidProposal(state, share, signedMessage)
 	case types.PrepareMessageType:
 		// TODO validSignedPrepareForHeightRoundAndRoot
 		return nil

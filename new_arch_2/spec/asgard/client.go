@@ -62,12 +62,18 @@ func UponPostConsensusQuorum(state *types.State) (interface{}, error) {
 }
 
 // UponProposal returns a prepare message for a valid proposal
-func UponProposal(state *types.QBFT) (*types.QBFTMessage, error) {
-	if !qbft.CanProcessMessages(state) {
+func UponProposal(state *types.State) (*types.QBFTMessage, error) {
+	if !qbft.CanProcessMessages(state.QBFT) {
 		return nil, errors.New("can't process events/ messages")
 	}
 
-	msg, err := qbft.CreatePrepareMessage(state)
+	// TODO - i.config.GetTimer().TimeoutForRound(signedProposal.Message.Round)
+
+	if err := validateConsensusData(state, state.QBFT.ProposalAcceptedForCurrentRound.FullData); err != nil {
+		return nil, err
+	}
+
+	msg, err := qbft.CreatePrepareMessage(state.QBFT)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +96,12 @@ func UponPrepareQuorum(state *types.QBFT) (*types.QBFTMessage, error) {
 }
 
 // UponCommitQuorum moves to post consensus phase, returns an array of partial signature messages to sign and broadcast
-func UponCommitQuorum(state *types.State) ([]*types.PartialSignatureMessage, error) {
+func UponCommitQuorum(state *types.State, share *types.Share) ([]*types.PartialSignatureMessage, error) {
+	byts, _ := qbft.DecidedValue(state.QBFT, share) // no need to handle error, validateConsensusData will handle it
+	if err := validateConsensusData(state, byts); err != nil {
+		return nil, err
+	}
+
 	role := runner.Role(state)
 	switch role {
 	case types.BeaconRoleAttester:
@@ -130,4 +141,21 @@ func UponRoundChangeQuorum(state *types.QBFT) error {
 // UponF1RoundChangeQuorum bumps round and broadcasts round change upon f+1 round changes
 func UponF1RoundChangeQuorum(state *types.QBFT) error {
 	panic("implement")
+}
+
+func validateConsensusData(state *types.State, data []byte) error {
+	cd := &types.ConsensusData{}
+	if err := cd.UnmarshalSSZ(data); err != nil {
+		return err
+	}
+
+	role := runner.Role(state)
+	switch role {
+	case types.BeaconRoleAttester:
+		return runner.AttesterValidateConsensusData(cd)
+	case types.BeaconRoleProposer:
+		return runner.ProposerValidateConsensusData(cd)
+	default:
+		return errors.New("role not supported")
+	}
 }

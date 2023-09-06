@@ -5,37 +5,33 @@ import (
 	types "ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
-func ProcessMessage(state *types.QBFT, share *types.Share, message *types.QBFTSignedMessage) error {
+func ProcessMessage(state *types.QBFT, share *types.Share, signedMessage *types.QBFTSignedMessage) error {
 	if !CanProcessMessages(state) {
 		return errors.New("can't process new messages")
 	}
 
-	if err := ValidateMessage(state, message); err != nil {
+	if err := ValidateMessage(state, share, signedMessage); err != nil {
 		return err
 	}
 
-	switch message.Message.MsgType {
+	switch signedMessage.Message.MsgType {
 	case types.ProposalMessageType:
-		return UponProposal(state, message)
+		return UponProposal(state, signedMessage)
 	case types.PrepareMessageType:
-		return UponPrepare(state, share, message)
+		return UponPrepare(state, share, signedMessage)
 	case types.CommitMessageType:
-		return UponCommit(state, message)
+		return UponCommit(state, signedMessage)
 	case types.RoundChangeMessageType:
 		// TODO validRoundChangeForData
 		return nil
 	default:
-		return errors.New("unknown message type")
+		return errors.New("unknown signedMessage type")
 	}
 }
 
 // CanProcessMessages returns true if can process messages
 func CanProcessMessages(state *types.QBFT) bool {
 	return !state.Stopped && int(state.Round) < CutoffRound
-}
-
-func IsFirstRound(state *types.QBFT) bool {
-	return state.Round == FirstRound
 }
 
 // IsProposer returns true if proposer for current round
@@ -92,4 +88,23 @@ func DecidedValue(state *types.QBFT, share *types.Share) ([]byte, error) {
 		return nil, errors.New("no valid proposal for round")
 	}
 	return proposalMsgs[0].FullData, nil
+}
+
+func HashDataRoot(data []byte) ([32]byte, error) {
+	return types.SSZBytes(data).HashTreeRoot()
+}
+
+// UniqueSignerQuorum returns true if all messages have 1 unique signer
+func UniqueSignerQuorum(quorum uint64, messages []*types.QBFTSignedMessage) bool {
+	uniqueSigners := make(map[uint64]bool)
+	for _, msg := range messages {
+		if len(msg.Signers) != 1 {
+			return false
+		}
+		if uniqueSigners[msg.Signers[0]] {
+			return false
+		}
+		uniqueSigners[msg.Signers[0]] = true
+	}
+	return uint64(len(uniqueSigners)) > quorum
 }

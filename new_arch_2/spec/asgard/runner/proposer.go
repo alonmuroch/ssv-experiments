@@ -111,3 +111,8 @@ func DecidedBlindedBlock(state *types.State) bool {
 	_, _, err := DecidedConsensusData(state).GetBlindedBlockData()
 	return err == nil
 }
+
+// ProposerValidateConsensusData validates consensus data, returns nil if valid
+func ProposerValidateConsensusData(cd *types.ConsensusData) error {
+	panic("implement")
+}

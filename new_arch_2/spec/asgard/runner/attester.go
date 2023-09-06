@@ -61,3 +61,8 @@ func AttesterExpectedPostConsensusRoots(state *types.State) ([]ssz.HashRoot, err
 	}
 	return []ssz.HashRoot{attestationData}, nil
 }
+
+// AttesterValidateConsensusData validates consensus data, returns nil if valid
+func AttesterValidateConsensusData(cd *types.ConsensusData) error {
+	panic("implement")
+}

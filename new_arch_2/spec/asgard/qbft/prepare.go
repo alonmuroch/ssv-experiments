@@ -1,6 +1,8 @@
 package qbft
 
 import (
+	"bytes"
+	"github.com/pkg/errors"
 	"ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
@@ -27,8 +29,46 @@ func CreatePrepareMessage(state *types.QBFT) (*types.QBFTMessage, error) {
 
 func PrepareQuorum(state *types.QBFT, share *types.Share) bool {
 	all := RoundAndType(state, state.Round, types.PrepareMessageType)
-	if len(all) >= int(share.Quorum) {
-		return true
+	return UniqueSignerQuorum(share.Quorum, all)
+}
+
+func validSignedPrepareForHeightRoundAndRoot(
+	share *types.Share,
+	signedMessage *types.QBFTSignedMessage,
+	height, round uint64,
+	root [32]byte,
+) error {
+	if signedMessage.Message.MsgType != types.PrepareMessageType {
+		return errors.New("prepare msg type is wrong")
 	}
-	return false
+	if signedMessage.Message.Height != height {
+		return errors.New("wrong msg height")
+	}
+	if signedMessage.Message.Round != round {
+		return errors.New("wrong msg round")
+	}
+
+	if err := signedMessage.Validate(); err != nil {
+		return errors.Wrap(err, "prepareData invalid")
+	}
+
+	if !bytes.Equal(signedMessage.Message.Root[:], root[:]) {
+		return errors.New("proposed data mistmatch")
+	}
+
+	if len(signedMessage.Signers) != 1 {
+		return errors.New("msg allows 1 signer")
+	}
+
+	if err := types.VerifyObjectSignature(
+		signedMessage.Signature,
+		signedMessage,
+		share.Domain,
+		types.QBFTSignatureType,
+		share.Cluster,
+	); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -20,8 +20,5 @@ func CreateCommitMessage(state *types.QBFT) (*types.QBFTMessage, error) {
 
 func CommitQuorum(state *types.QBFT, share *types.Share) bool {
 	all := RoundAndType(state, state.Round, types.CommitMessageType)
-	if len(all) >= int(share.Quorum) {
-		return true
-	}
-	return false
+	return UniqueSignerQuorum(share.Quorum, all)
 }

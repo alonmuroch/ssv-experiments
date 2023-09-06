@@ -4,8 +4,6 @@ import (
 	"ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
-const FirstRound = 1
-
 func Start(
 	state *types.QBFT,
 	share *types.Share,
@@ -13,10 +11,10 @@ func Start(
 	height uint64,
 ) (*types.QBFTMessage, error) {
 	state.StartValue = startValue
-	state.Round = FirstRound
+	state.Round = types.FirstRound
 	state.Height = height
 
-	if proposerForRound(FirstRound) == share.OperatorID {
+	if proposerForRound(types.FirstRound) == share.OperatorID {
 		return CreateProposalMessage(state)
 	}
 	return nil, nil

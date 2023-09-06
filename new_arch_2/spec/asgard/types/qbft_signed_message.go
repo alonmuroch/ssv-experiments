@@ -9,9 +9,16 @@ const (
 	RoundChangeMessageType
 )
 
+const (
+	NoRound     uint64 = 0 // NoRound represents a nil/ zero round
+	FirstRound  uint64 = 1 // FirstRound value is the first round in any QBFT instance start
+	FirstHeight uint64 = 0
+)
+
 type QBFTMessage struct {
 	MsgType uint64
 	Round   uint64 // QBFT round for which the msg is for
+	Height  uint64 // QBFT height for which the msg is for
 
 	Root                     [32]byte `ssz-size:"32"`
 	DataRound                uint64
@@ -25,6 +32,15 @@ func (msg *QBFTMessage) GetRoundChangeJustifications() ([]*QBFTSignedMessage, er
 
 func (msg *QBFTMessage) GetPrepareJustifications() ([]*QBFTSignedMessage, error) {
 	return unmarshalJustifications(msg.PrepareJustification)
+}
+
+// RoundChangePrepared returns true if message is a RoundChange and prepared
+func (msg *QBFTMessage) RoundChangePrepared() bool {
+	if msg.MsgType != RoundChangeMessageType {
+		return false
+	}
+
+	return msg.DataRound != NoRound
 }
 
 func unmarshalJustifications(data [][]byte) ([]*QBFTSignedMessage, error) {
