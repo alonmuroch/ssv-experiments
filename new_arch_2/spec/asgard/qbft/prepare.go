@@ -6,12 +6,14 @@ import (
 	"ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
-func UponPrepare(state *types.QBFT, share *types.Share, msg *types.QBFTSignedMessage) error {
-	// TOOD implement
-	AddMessage(state, msg)
+func UponPrepare(state *types.QBFT, share *types.Share, signedMessage *types.QBFTSignedMessage) error {
+	if !uniqueSingerRound(state, signedMessage) {
+		return errors.New("duplicate message")
+	}
 
-	prepareMsg := RoundAndType(state, state.Round, types.PrepareMessageType)
-	if len(prepareMsg) >= int(share.Quorum) {
+	AddMessage(state, signedMessage)
+
+	if PrepareQuorum(state, share) {
 		state.PreparedRound = state.Round
 	}
 

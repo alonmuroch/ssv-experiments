@@ -14,7 +14,7 @@ func Start(
 	state.Round = types.FirstRound
 	state.Height = height
 
-	if proposerForRound(types.FirstRound) == share.OperatorID {
+	if IsProposer(state, share) {
 		return CreateProposalMessage(state)
 	}
 	return nil, nil

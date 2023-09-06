@@ -9,6 +9,10 @@ import (
 // UponProposal process proposal message
 // Assumes proposal message is valid!
 func UponProposal(state *types.QBFT, signedMessage *types.QBFTSignedMessage) error {
+	if !uniqueSingerRound(state, signedMessage) {
+		return errors.New("duplicate message")
+	}
+
 	AddMessage(state, signedMessage)
 	newRound := signedMessage.Message.Round
 	state.ProposalAcceptedForCurrentRound = signedMessage
@@ -29,12 +33,11 @@ func isValidProposal(state *types.QBFT, share *types.Share, signedMessage *types
 	if signedMessage.Message.MsgType != types.ProposalMessageType {
 		return errors.New("msg type is not proposal")
 	}
-	if signedMessage.Message.Height != state.Height {
-		return errors.New("wrong msg height")
-	}
+
 	if len(signedMessage.Signers) != 1 {
 		return errors.New("proposal allows 1 signer")
 	}
+
 	if err := types.VerifyObjectSignature(
 		signedMessage.Signature,
 		signedMessage,
@@ -44,6 +47,9 @@ func isValidProposal(state *types.QBFT, share *types.Share, signedMessage *types
 	); err != nil {
 		return err
 	}
+
+	// validate unique message from signer
+
 	if signedMessage.Signers[0] != proposerForRound(signedMessage.Message.Round) {
 		return errors.New("proposal leader invalid")
 	}
@@ -97,7 +103,7 @@ func isProposalJustification(
 		// no quorum, duplicate signers,  invalid still has quorum, invalid no quorum
 		// prepared
 		for _, rc := range roundChangeMessages {
-			if err := validRoundChangeForData(state, share, rc, height, round, fullData); err != nil {
+			if err := validRoundChangeForData(state, share, rc, round, fullData); err != nil {
 				return errors.Wrap(err, "change round msg not valid")
 			}
 		}

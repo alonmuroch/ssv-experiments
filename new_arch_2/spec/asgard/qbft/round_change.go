@@ -28,14 +28,11 @@ func validRoundChangeForData(
 	state *types.QBFT,
 	share *types.Share,
 	signedMessage *types.QBFTSignedMessage,
-	height, round uint64,
+	round uint64,
 	fullData []byte,
 ) error {
 	if signedMessage.Message.MsgType != types.RoundChangeMessageType {
 		return errors.New("round change msg type is wrong")
-	}
-	if signedMessage.Message.Height != height {
-		return errors.New("wrong msg height")
 	}
 	if signedMessage.Message.Round != round {
 		return errors.New("wrong msg round")
