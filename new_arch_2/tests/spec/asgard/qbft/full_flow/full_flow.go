@@ -6,6 +6,8 @@ import (
 	"ssv-experiments/new_arch_2/tests/spec/asgard/qbft"
 )
 
+// FullFlow
+// @generate-test
 func FullFlow() *qbft.ProcessMessageTest {
 	msgs := []*types.QBFTSignedMessage{
 		fixtures.QBFTSignedMessage(1, types.FirstRound, types.ProposalMessageType),
@@ -18,8 +20,23 @@ func FullFlow() *qbft.ProcessMessageTest {
 	}
 
 	return &qbft.ProcessMessageTest{
-		Pre:      &types.QBFT{},
-		Post:     &types.QBFT{},
+		Pre: &types.QBFT{
+			Round:    types.FirstRound,
+			Height:   fixtures.Height,
+			Messages: []*types.QBFTSignedMessage{},
+
+			StartValue: fixtures.AttesterConsensusData,
+		},
+		Post: &types.QBFT{
+			Round:    types.FirstRound,
+			Height:   fixtures.Height,
+			Messages: msgs,
+
+			PreparedRound:                   types.FirstRound,
+			ProposalAcceptedForCurrentRound: fixtures.QBFTSignedMessage(1, types.FirstRound, types.ProposalMessageType),
+
+			StartValue: fixtures.AttesterConsensusData,
+		},
 		Messages: msgs,
 	}
 }

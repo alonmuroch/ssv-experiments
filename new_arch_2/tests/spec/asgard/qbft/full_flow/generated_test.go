@@ -13,3 +13,10 @@ func TestFullFlow(t *testing.T) {
 	require.NoError(t, err)
 	tst.Run(t, fixtures.Share)
 }
+func TestFullFlow2(t *testing.T) {
+	tst, err := tests.NewSpecTest[*qbft.ProcessMessageTest](FullFlow2())
+	require.NoError(t, err)
+	tst.Run(t, fixtures.Share)
+}
+
+var AllTests = []tests.TestObject{FullFlow(), FullFlow2()}
