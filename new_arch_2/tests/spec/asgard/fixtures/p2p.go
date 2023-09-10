@@ -26,7 +26,7 @@ func P2PConsensusMessage(round, signer, msgType uint64) *p2p.Message {
 }
 
 func P2PPartialSignatureMessage(signer, slot uint64, msgType types.PartialSigMsgType) *p2p.Message {
-	m := PartialSignatureMessage(signer, slot, msgType)
+	m := SignedPartialSignatureMessage(signer, slot, msgType)
 
 	byts, err := m.MarshalSSZ()
 	if err != nil {

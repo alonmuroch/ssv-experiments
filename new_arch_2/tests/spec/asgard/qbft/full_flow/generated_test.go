@@ -5,6 +5,7 @@ import (
 	"ssv-experiments/new_arch_2/tests"
 	"ssv-experiments/new_arch_2/tests/spec/asgard/fixtures"
 	"ssv-experiments/new_arch_2/tests/spec/asgard/qbft"
+	"ssv-experiments/new_arch_2/tests/spec/asgard/ssv"
 	"testing"
 )
 

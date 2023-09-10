@@ -23,14 +23,14 @@ func main() {
 
 	//dirName := "/Users/alonmuroch/Projects/ssv-experiments/new_arch_2/tests/spec/asgard/qbft/full_flow/"
 	fmt.Printf("Generating tests for dir: %s\n", dirName)
-	packageName, funcNames := parseFuncNamesToGenerate(dirName)
+	packageName, funcNames, instanceNames := parseFuncNamesToGenerate(dirName)
 
 	if len(funcNames) > 0 {
-		newF, err := os.Create("/Users/alonmuroch/Projects/ssv-experiments/new_arch_2/tests/spec/asgard/qbft/full_flow/generated_test.go")
+		newF, err := os.Create(filepath.Join(dirName, "generated_test.go"))
 		if err != nil {
 			panic(err.Error())
 		}
-		f := createTestFunc(packageName, funcNames)
+		f := createTestFunc(packageName, funcNames, instanceNames)
 		fset := token.NewFileSet() // positions are relative to fset
 		if err := printer.Fprint(newF, fset, f); err != nil {
 			panic(err.Error())
@@ -38,13 +38,14 @@ func main() {
 	}
 }
 
-func parseFuncNamesToGenerate(dirPath string) (string, []string) {
+func parseFuncNamesToGenerate(dirPath string) (string, []string, []string) {
 	entires, err := os.ReadDir(dirPath)
 	if err != nil {
 		panic(err.Error())
 	}
 
 	funcNames := make([]string, 0)
+	instanceNames := make([]string, 0)
 	packageName := ""
 	for _, e := range entires {
 		if !e.IsDir() && e.Name() != "generate.go" {
@@ -61,6 +62,16 @@ func parseFuncNamesToGenerate(dirPath string) (string, []string) {
 						for _, c := range funcDecl.Doc.List {
 							if strings.Contains(c.Text, GenerateDecorator) {
 								funcNames = append(funcNames, funcDecl.Name.Name)
+
+								// find return type
+								for _, l1 := range funcDecl.Body.List {
+									if l2, ok := l1.(*ast.ReturnStmt); ok {
+										name := "*" + l2.Results[0].(*ast.UnaryExpr).X.(*ast.CompositeLit).Type.(*ast.SelectorExpr).X.(*ast.Ident).Name
+										name += "."
+										name += l2.Results[0].(*ast.UnaryExpr).X.(*ast.CompositeLit).Type.(*ast.SelectorExpr).Sel.Name
+										instanceNames = append(instanceNames, name)
+									}
+								}
 							}
 
 							// set package name
@@ -71,10 +82,10 @@ func parseFuncNamesToGenerate(dirPath string) (string, []string) {
 			}
 		}
 	}
-	return packageName, funcNames
+	return packageName, funcNames, instanceNames
 }
 
-func createTestFunc(packageName string, funcNames []string) *ast.File {
+func createTestFunc(packageName string, funcNames, testInstances []string) *ast.File {
 	fset := token.NewFileSet() // positions are relative to fset
 	f, err := parser.ParseFile(fset, "", template, parser.ParseComments)
 	if err != nil {
@@ -83,9 +94,9 @@ func createTestFunc(packageName string, funcNames []string) *ast.File {
 
 	f.Name.Name = packageName
 
-	for _, funcName := range funcNames {
+	for i, funcName := range funcNames {
 		fmt.Printf("    Adding func: %s\n", funcName)
-		addTest(f, funcName)
+		addTest(f, funcName, testInstances[i])
 	}
 
 	addAllTestsSlice(f, funcNames)
@@ -95,7 +106,7 @@ func createTestFunc(packageName string, funcNames []string) *ast.File {
 	return f
 }
 
-func addTest(input *ast.File, funcName string) {
+func addTest(input *ast.File, funcName, testInstance string) {
 	fset := token.NewFileSet() // positions are relative to fset
 	f, err := parser.ParseFile(fset, "", singleTestTemplate, parser.ParseComments)
 	if err != nil {
@@ -112,6 +123,18 @@ func addTest(input *ast.File, funcName string) {
 		Rhs[0].(*ast.CallExpr).
 		Args[0].(*ast.CallExpr).
 		Fun.(*ast.Ident).Name = funcName
+
+	f.Decls[0].(*ast.FuncDecl).
+		Body.List[0].(*ast.AssignStmt).
+		Rhs[0].(*ast.CallExpr).
+		Fun.(*ast.IndexExpr).
+		Index.(*ast.Ident).Name = testInstance
+
+	f.Decls[0].(*ast.FuncDecl).
+		Body.List[0].(*ast.AssignStmt).
+		Rhs[0].(*ast.CallExpr).
+		Args[0].(*ast.CallExpr).
+		Fun.(*ast.Ident).Obj.Name = testInstance
 
 	input.Decls = append(input.Decls, f.Decls[0])
 }
@@ -140,6 +163,7 @@ import (
 	"ssv-experiments/new_arch_2/tests"
 	"ssv-experiments/new_arch_2/tests/spec/asgard/fixtures"
 	"ssv-experiments/new_arch_2/tests/spec/asgard/qbft"
+	"ssv-experiments/new_arch_2/tests/spec/asgard/ssv"
 	"testing"
 )
 `
@@ -147,7 +171,7 @@ var singleTestTemplate = `
 package xxx
 
 func XXX(t *testing.T) {
-	tst, err := tests.NewSpecTest[*qbft.ProcessMessageTest](XXX())
+	tst, err := tests.NewSpecTest[XXX](XXX())
 	require.NoError(t, err)
 	tst.Run(t, fixtures.Share)
 }
