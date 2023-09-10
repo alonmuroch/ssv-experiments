@@ -20,6 +20,9 @@ This new spec architecture has the following improvements/ focus:
 
 ## Overview
 
+### Message struct
+P2P, QBFT and partial signature messages remain the same so to not create hard forks
+
 ### Node & Client
 To simplify the spec and minimize all "implementation" specific code, the new spec architecture supports a node & client approach (like eth2).
 
@@ -31,3 +34,9 @@ With this new design, when [ProcessMessage](./spec/asgard/process.go) is called,
 
 The responsibility to react to state changes and broadcast responses is up to a [client](./spec/asgard/client.go) code which looks at the state and acts upon it.  
 This separation enables flexibility in implementation without coupling spec and implementation.
+
+### Spec Tests
+* Easy marshaling without complex unmarshal code
+* Standardized test result to unify testing code
+* Easily run individual tests
+* Easy "state comparison"

@@ -6,11 +6,6 @@ import (
 	"github.com/herumi/bls-eth-go-binary/bls"
 )
 
-type Signer struct {
-	Signer uint64
-	PubKey []byte `ssz-size:"48"`
-}
-
 func VerifyObjectSignature(
 	signature [96]byte,
 	rootObj ssz.HashRoot,
