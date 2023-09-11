@@ -6,9 +6,9 @@ import (
 	"ssv-experiments/new_arch_2/tests/spec/asgard/ssv"
 )
 
-// FullFlow
+// Proposer
 // @generate-test
-func FullFlow() *ssv.ProcessMessageTest {
+func Proposer() *ssv.ProcessMessageTest {
 	msg := []*types.SignedPartialSignatureMessages{
 		fixtures.SignedPartialSignatureMessage(1, fixtures.Slot, types.PostConsensusPartialSig),
 		fixtures.SignedPartialSignatureMessage(2, fixtures.Slot, types.PostConsensusPartialSig),
@@ -31,19 +31,19 @@ func FullFlow() *ssv.ProcessMessageTest {
 		PreparedRound:                   types.FirstRound,
 		ProposalAcceptedForCurrentRound: fixtures.QBFTSignedMessage(1, types.FirstRound, types.ProposalMessageType),
 
-		StartValue: fixtures.AttesterConsensusData,
+		StartValue: fixtures.ProposerConsensusData,
 	}
 
 	return &ssv.ProcessMessageTest{
 		Pre: &types.State{
 			PartialSignatures: []*types.SignedPartialSignatureMessages{},
 			QBFT:              qbft,
-			StartingDuty:      fixtures.AttesterDuty,
+			StartingDuty:      fixtures.ProposerDuty,
 		},
 		Post: &types.State{
 			PartialSignatures: msg,
 			QBFT:              qbft,
-			StartingDuty:      fixtures.AttesterDuty,
+			StartingDuty:      fixtures.ProposerDuty,
 		},
 		Messages: msg,
 	}

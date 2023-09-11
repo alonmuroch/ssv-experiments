@@ -4,6 +4,7 @@ import (
 	"ssv-experiments/new_arch/p2p"
 	"ssv-experiments/new_arch/qbft"
 	"ssv-experiments/new_arch/types"
+	types2 "ssv-experiments/new_arch_2/spec/asgard/types"
 )
 
 var Identifier = p2p.NewIdentifier(Slot, ValidatorPK, types.BeaconRoleAttester)
@@ -25,7 +26,7 @@ func P2PConsensusMessage(round, signer, msgType uint64) *p2p.Message {
 	}
 }
 
-func P2PPartialSignatureMessage(signer, slot uint64, msgType types.PartialSigMsgType) *p2p.Message {
+func P2PPartialSignatureMessage(signer, slot uint64, msgType types2.PartialSigMsgType) *p2p.Message {
 	m := SignedPartialSignatureMessage(signer, slot, msgType)
 
 	byts, err := m.MarshalSSZ()

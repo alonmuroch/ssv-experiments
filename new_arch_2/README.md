@@ -35,6 +35,8 @@ With this new design, when [ProcessMessage](./spec/asgard/process.go) is called,
 The responsibility to react to state changes and broadcast responses is up to a [client](./spec/asgard/client.go) code which looks at the state and acts upon it.  
 This separation enables flexibility in implementation without coupling spec and implementation.
 
+![Alt text](./new_spec_flow.png "a title")
+
 ### Spec Tests
 * Easy marshaling without complex unmarshal code
 * Standardized test result to unify testing code

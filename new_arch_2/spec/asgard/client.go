@@ -19,7 +19,7 @@ func StartAttesterRunner(state *types.State, share *types.Share, consensusData *
 	)
 }
 
-// StartProposerRunner starts aproposer runner with pre-consensus
+// StartProposerRunner starts proposer runner, returns pre-consensus message
 func StartProposerRunner(state *types.State, share *types.Share, duty *types.Duty, randaoRoot [32]byte, signedRandao [96]byte) (interface{}, error) {
 	state.StartingDuty = duty
 

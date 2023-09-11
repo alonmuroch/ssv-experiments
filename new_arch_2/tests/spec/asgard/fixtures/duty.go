@@ -12,3 +12,9 @@ var AttesterDuty = &types.Duty{
 	ValidatorPK: ValidatorPK,
 	Slot:        Slot,
 }
+
+var ProposerDuty = &types.Duty{
+	Role:        types.BeaconRoleProposer,
+	ValidatorPK: ValidatorPK,
+	Slot:        Slot,
+}

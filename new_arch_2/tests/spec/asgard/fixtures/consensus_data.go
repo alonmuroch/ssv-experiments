@@ -7,3 +7,9 @@ var AttesterConsensusData = &types.ConsensusData{
 	DataVersion: 0,
 	DataSSZ:     AttestationDataBytes,
 }
+
+var ProposerConsensusData = &types.ConsensusData{
+	Duty:        ProposerDuty,
+	DataVersion: 0,
+	DataSSZ:     BeaconBlockCapellaBytes,
+}
