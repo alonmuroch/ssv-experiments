@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -13,47 +14,82 @@ import (
 
 const (
 	GenerateDecorator = "@generate-test"
+
+	GenerateTestsMode = "generate-tests"
+	GenerateSSZMode   = "generate-ssz"
 )
 
+type parsedTest struct {
+	funcName         string
+	testInstanceName string
+}
+
+type parsedPackage struct {
+	packageName string
+	tests       []*parsedTest
+	imports     map[string]*ast.ImportSpec
+}
+
 func main() {
+	GenerateTests()
+	return
+	modePtr := flag.String("mode", GenerateTestsMode, "mode of operation")
+	flag.Parse()
+
+	switch *modePtr {
+	case GenerateTestsMode:
+		GenerateTests()
+	case GenerateSSZMode:
+		GenerateSSZ()
+	default:
+		panic("mode not supported")
+	}
+}
+
+func GenerateSSZ() {
+	panic("implement")
+}
+
+// GenerateTests will generate tests file for all tests in working directory
+func GenerateTests() {
 	dirName, err := os.Getwd()
 	if err != nil {
 		panic(err.Error())
 	}
 
 	//dirName := "/Users/alonmuroch/Projects/ssv-experiments/new_arch_2/tests/spec/asgard/qbft/full_flow/"
-	fmt.Printf("Generating tests for dir: %s\n", dirName)
-	packageName, funcNames, instanceNames := parseFuncNamesToGenerate(dirName)
 
-	if len(funcNames) > 0 {
-		newF, err := os.Create(filepath.Join(dirName, "generated_test.go"))
-		if err != nil {
-			panic(err.Error())
-		}
-		f := createTestFunc(packageName, funcNames, instanceNames)
-		fset := token.NewFileSet() // positions are relative to fset
-		if err := printer.Fprint(newF, fset, f); err != nil {
-			panic(err.Error())
-		}
+	fmt.Printf("Generating tests for dir: %s\n", dirName)
+	parsedPkg := parseFuncNamesToGenerate(dirName)
+
+	newF, err := os.Create(filepath.Join(dirName, "generated_test.go"))
+	if err != nil {
+		panic(err.Error())
+	}
+	f := createTestFunc(parsedPkg)
+	fset := token.NewFileSet() // positions are relative to fset
+	if err := printer.Fprint(newF, fset, f); err != nil {
+		panic(err.Error())
 	}
 }
 
-func parseFuncNamesToGenerate(dirPath string) (string, []string, []string) {
+func parseFuncNamesToGenerate(dirPath string) *parsedPackage {
 	entires, err := os.ReadDir(dirPath)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	funcNames := make([]string, 0)
-	instanceNames := make([]string, 0)
-	packageName := ""
+	ret := &parsedPackage{
+		tests:   []*parsedTest{},
+		imports: map[string]*ast.ImportSpec{},
+	}
 	for _, e := range entires {
 		if !e.IsDir() && e.Name() != "generate.go" {
 			file := filepath.Join(dirPath, e.Name())
 			fset := token.NewFileSet() // positions are relative to fset
 			f, err := parser.ParseFile(fset, file, nil, parser.ParseComments)
 			if err != nil {
-				panic(err.Error())
+				continue // some non golang file
 			}
 
 			for _, decl := range f.Decls {
@@ -61,47 +97,62 @@ func parseFuncNamesToGenerate(dirPath string) (string, []string, []string) {
 					if funcDecl.Doc != nil {
 						for _, c := range funcDecl.Doc.List {
 							if strings.Contains(c.Text, GenerateDecorator) {
-								funcNames = append(funcNames, funcDecl.Name.Name)
+								parsedTst := &parsedTest{
+									funcName: funcDecl.Name.Name,
+								}
 
 								// find return type
 								for _, l1 := range funcDecl.Body.List {
 									if l2, ok := l1.(*ast.ReturnStmt); ok {
-										name := "*" + l2.Results[0].(*ast.UnaryExpr).X.(*ast.CompositeLit).Type.(*ast.SelectorExpr).X.(*ast.Ident).Name
-										name += "."
-										name += l2.Results[0].(*ast.UnaryExpr).X.(*ast.CompositeLit).Type.(*ast.SelectorExpr).Sel.Name
-										instanceNames = append(instanceNames, name)
+										parsedTst.testInstanceName = "*" + l2.Results[0].(*ast.UnaryExpr).X.(*ast.CompositeLit).Type.(*ast.SelectorExpr).X.(*ast.Ident).Name
+										parsedTst.testInstanceName += "."
+										parsedTst.testInstanceName += l2.Results[0].(*ast.UnaryExpr).X.(*ast.CompositeLit).Type.(*ast.SelectorExpr).Sel.Name
 									}
 								}
+								ret.tests = append(ret.tests, parsedTst)
+							}
+
+							// add imports
+							for _, imprt := range f.Imports {
+								ret.imports[imprt.Path.Value] = imprt
 							}
 
 							// set package name
-							packageName = f.Name.Name
+							ret.packageName = f.Name.Name
 						}
 					}
 				}
 			}
 		}
 	}
-	return packageName, funcNames, instanceNames
+	return ret
 }
 
-func createTestFunc(packageName string, funcNames, testInstances []string) *ast.File {
+func createTestFunc(parsedPackage *parsedPackage) *ast.File {
 	fset := token.NewFileSet() // positions are relative to fset
 	f, err := parser.ParseFile(fset, "", template, parser.ParseComments)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	f.Name.Name = packageName
-
-	for i, funcName := range funcNames {
-		fmt.Printf("    Adding func: %s\n", funcName)
-		addTest(f, funcName, testInstances[i])
+	// add imports
+	for _, imprt := range parsedPackage.imports {
+		f.Imports = append(f.Imports, imprt)
+		f.Decls[0].(*ast.GenDecl).Specs = append(f.Decls[0].(*ast.GenDecl).Specs, imprt)
 	}
 
-	addAllTestsSlice(f, funcNames)
+	// change packcage name
+	f.Name.Name = parsedPackage.packageName
 
-	fmt.Printf("Found %d tests\n", len(funcNames))
+	// add tests
+	for i := range parsedPackage.tests {
+		fmt.Printf("    Adding func: %s\n", parsedPackage.tests[i].funcName)
+		addTest(f, parsedPackage.tests[i].funcName, parsedPackage.tests[i].testInstanceName)
+	}
+
+	addAllTestsSlice(f, parsedPackage)
+
+	fmt.Printf("Found %d tests\n", len(parsedPackage.tests))
 
 	return f
 }
@@ -139,11 +190,11 @@ func addTest(input *ast.File, funcName, testInstance string) {
 	input.Decls = append(input.Decls, f.Decls[0])
 }
 
-func addAllTestsSlice(input *ast.File, funcName []string) {
+func addAllTestsSlice(input *ast.File, parsedPackage *parsedPackage) {
 	// prepare test func names
 	toReplace := ""
-	for _, n := range funcName {
-		toReplace += n + "(),"
+	for i := range parsedPackage.tests {
+		toReplace += parsedPackage.tests[i].funcName + "(),"
 	}
 	tmplat := strings.Replace(strings.Clone(testsArrayTemplate), "__to_replace__", toReplace, -1)
 
@@ -161,9 +212,6 @@ package xxx
 import (
 	"github.com/stretchr/testify/require"
 	"ssv-experiments/new_arch_2/tests"
-	"ssv-experiments/new_arch_2/tests/spec/asgard/fixtures"
-	"ssv-experiments/new_arch_2/tests/spec/asgard/qbft"
-	"ssv-experiments/new_arch_2/tests/spec/asgard/ssv"
 	"testing"
 )
 `

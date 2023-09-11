@@ -3,10 +3,10 @@ package full_flow
 import (
 	"github.com/stretchr/testify/require"
 	"ssv-experiments/new_arch_2/tests"
+	"testing"
+	"ssv-experiments/new_arch_2/spec/asgard/types"
 	"ssv-experiments/new_arch_2/tests/spec/asgard/fixtures"
 	"ssv-experiments/new_arch_2/tests/spec/asgard/qbft"
-	"ssv-experiments/new_arch_2/tests/spec/asgard/ssv"
-	"testing"
 )
 
 func TestFullFlow(t *testing.T) {
