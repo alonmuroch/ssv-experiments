@@ -42,6 +42,8 @@ This separation enables flexibility in implementation without coupling spec and 
 * Standardized test result to unify testing code
 * Easily run individual tests
 * Easy "state comparison"
+* Handle errors better without hard coded errors
+* Inline state comparison 
 
 Generate Test function -> Specific test implementation -> SpecTest -> Run
 
