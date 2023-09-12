@@ -89,6 +89,11 @@ func ProcessRandao(state *types.State, share *types.Share, message *types.Signed
 	panic("implement")
 }
 
+func ProposerExpectedPreConsensusRoots(state *types.State) ([]ssz.HashRoot, error) {
+	epoch := state.StartingDuty.BeaconNetwork.EstimatedEpochAtSlot(state.StartingDuty.Slot)
+	return []ssz.HashRoot{types.SSZUint64(epoch)}, nil
+}
+
 func ProposerExpectedPostConsensusRoots(state *types.State) ([]ssz.HashRoot, error) {
 	if DecidedBlindedBlock(state) {
 		_, data, err := DecidedConsensusData(state).GetBlindedBlockData()

@@ -28,19 +28,19 @@ const (
 )
 
 // Available networks.
-const (
+var (
 	// PraterNetwork represents the Prater test network.
-	PraterNetwork BeaconNetwork = "prater"
+	PraterNetwork BeaconNetwork = []byte("prater")
 
 	// MainNetwork represents the main network.
-	MainNetwork BeaconNetwork = "mainnet"
+	MainNetwork BeaconNetwork = []byte("mainnet")
 
 	// BeaconTestNetwork is a simple test network with a custom genesis time
-	BeaconTestNetwork BeaconNetwork = "now_test_network"
+	BeaconTestNetwork BeaconNetwork = []byte("now_test_network")
 )
 
 // BeaconNetwork represents the network.
-type BeaconNetwork string
+type BeaconNetwork []byte
 
 // EstimatedEpochAtSlot estimates epoch at the given slot
 func (n BeaconNetwork) EstimatedEpochAtSlot(slot uint64) uint64 {
