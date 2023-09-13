@@ -10,12 +10,11 @@ func Start(
 	startValue *types.ConsensusData,
 	height uint64,
 ) (*types.QBFTMessage, error) {
-	state.StartValue = startValue
 	state.Round = types.FirstRound
 	state.Height = height
 
 	if IsProposer(state, share) {
-		return CreateProposalMessage(state)
+		return CreateProposalMessage(state, startValue)
 	}
 	return nil, nil
 }

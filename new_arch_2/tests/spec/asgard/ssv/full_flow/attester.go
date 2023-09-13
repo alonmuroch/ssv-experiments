@@ -30,8 +30,6 @@ func Attester() *ssv.ProcessMessageTest {
 
 		PreparedRound:                   types.FirstRound,
 		ProposalAcceptedForCurrentRound: fixtures.QBFTSignedMessage(1, types.FirstRound, types.ProposalMessageType),
-
-		StartValue: fixtures.AttesterConsensusData,
 	}
 
 	return &ssv.ProcessMessageTest{

@@ -30,8 +30,6 @@ func Proposer() *ssv.ProcessMessageTest {
 
 		PreparedRound:                   types.FirstRound,
 		ProposalAcceptedForCurrentRound: fixtures.QBFTSignedMessage(1, types.FirstRound, types.ProposalMessageType),
-
-		StartValue: fixtures.ProposerConsensusData,
 	}
 
 	return &ssv.ProcessMessageTest{

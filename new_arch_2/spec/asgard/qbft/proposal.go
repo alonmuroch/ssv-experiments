@@ -20,7 +20,7 @@ func UponProposal(state *types.QBFT, signedMessage *types.QBFTSignedMessage) err
 	return nil
 }
 
-func CreateProposalMessage(state *types.QBFT) (*types.QBFTMessage, error) {
+func CreateProposalMessage(state *types.QBFT, value *types.ConsensusData) (*types.QBFTMessage, error) {
 	// TODO implement
 	return &types.QBFTMessage{
 		Round:   state.Round,

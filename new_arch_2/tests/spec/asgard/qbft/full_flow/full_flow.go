@@ -24,8 +24,6 @@ func FullFlow() *qbft.ProcessMessageTest {
 			Round:    types.FirstRound,
 			Height:   fixtures.Height,
 			Messages: []*types.QBFTSignedMessage{},
-
-			StartValue: fixtures.AttesterConsensusData,
 		},
 		Post: &types.QBFT{
 			Round:    types.FirstRound,
@@ -34,8 +32,6 @@ func FullFlow() *qbft.ProcessMessageTest {
 
 			PreparedRound:                   types.FirstRound,
 			ProposalAcceptedForCurrentRound: fixtures.QBFTSignedMessage(1, types.FirstRound, types.ProposalMessageType),
-
-			StartValue: fixtures.AttesterConsensusData,
 		},
 		Messages: msgs,
 	}
