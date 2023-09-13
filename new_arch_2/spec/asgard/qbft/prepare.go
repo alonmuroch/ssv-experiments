@@ -7,10 +7,9 @@ import (
 )
 
 func UponPrepare(state *types.QBFT, share *types.Share, signedMessage *types.QBFTSignedMessage) error {
-	if !uniqueSingerRound(state, signedMessage) {
+	if !uniqueSingerForRound(state, signedMessage) {
 		return errors.New("duplicate message")
 	}
-
 	AddMessage(state, signedMessage)
 
 	if PrepareQuorum(state, share) {

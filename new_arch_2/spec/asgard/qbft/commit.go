@@ -9,7 +9,7 @@ import (
 // UponCommit returns true if a quorum of commit messages was received.
 // Assumes commit message is valid!
 func UponCommit(state *types.QBFT, share *types.Share, signedMessage *types.QBFTSignedMessage) error {
-	if !uniqueSingerRound(state, signedMessage) {
+	if !uniqueSingerForRound(state, signedMessage) {
 		return errors.New("duplicate message")
 	}
 	AddMessage(state, signedMessage)

@@ -18,8 +18,8 @@ func AddMessage(state *types.QBFT, msg *types.QBFTSignedMessage) {
 	state.Messages = append(state.Messages, msg)
 }
 
-// uniqueSingerRound returns true if <signer, round, message type> unique
-func uniqueSingerRound(state *types.QBFT, signedMessage *types.QBFTSignedMessage) bool {
+// uniqueSingerForRound returns true if <signer, round, message type> unique
+func uniqueSingerForRound(state *types.QBFT, signedMessage *types.QBFTSignedMessage) bool {
 	for _, msg := range state.Messages {
 		uniqueSigners := func(a, b []uint64) bool {
 			for i := range a {

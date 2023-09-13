@@ -24,6 +24,7 @@ func RoundChangePartialQuorum(state *types.QBFT, share *types.Share) bool {
 	return UniqueSignerQuorum(share.PartialQuorum, all)
 }
 
+// validRoundChangeForData returns nil if round change message is valid
 func validRoundChangeForData(
 	state *types.QBFT,
 	share *types.Share,

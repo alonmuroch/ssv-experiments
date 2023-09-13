@@ -9,11 +9,11 @@ import (
 // UponProposal process proposal message
 // Assumes proposal message is valid!
 func UponProposal(state *types.QBFT, signedMessage *types.QBFTSignedMessage) error {
-	if !uniqueSingerRound(state, signedMessage) {
+	if !uniqueSingerForRound(state, signedMessage) {
 		return errors.New("duplicate message")
 	}
-
 	AddMessage(state, signedMessage)
+
 	newRound := signedMessage.Message.Round
 	state.ProposalAcceptedForCurrentRound = signedMessage
 	state.Round = newRound
