@@ -5,5 +5,5 @@ type Module struct {
 	// Account that controls the Module
 	Account uint64
 	ID      uint64
-	Name    []byte
+	Name    []byte `ssz-max:"1024"`
 }
