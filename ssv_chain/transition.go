@@ -2,6 +2,7 @@ package ssv_chain
 
 import (
 	"fmt"
+	v1 "github.com/cometbft/cometbft/api/cometbft/abci/v1"
 	"ssv-experiments/ssv_chain/operations"
 	module3 "ssv-experiments/ssv_chain/operations/account"
 	module2 "ssv-experiments/ssv_chain/operations/cluster"
@@ -10,29 +11,64 @@ import (
 	"ssv-experiments/ssv_chain/types"
 )
 
+// ProcessBlock is a CometBFT compatible request that is called during FinalizeBlock.
+//
+//	It applies the block to the state and returns a CometBFT compatible response
+func ProcessBlock(state *types.State, req *v1.FinalizeBlockRequest) (*v1.FinalizeBlockResponse, error) {
+	if err := ApplyBlockHeight(state, uint64(req.Height)); err != nil {
+		return nil, err
+	}
+	panic("implement")
+}
+
+func ApplyBlockHeight(state *types.State, newHeight uint64) error {
+	if state.BlockHeight+1 != newHeight {
+		return fmt.Errorf("invalid height")
+	}
+	state.BlockHeight++
+	return nil
+}
+
+type Receipt struct {
+	GasConsumed uint64
+	Error       error
+}
+
 // ProcessTransactions processes and applies transactions on state, returns nil if valid
-func ProcessTransactions(s *types.State, txs []*types.Transaction) error {
+func ProcessTransactions(s *types.State, txs []*types.Transaction) *Receipt {
+	gasConsumed := uint64(0)
 	for _, tx := range txs {
-		t := tx.Type[1]
-		v := tx.Type[2]
-		op := tx.Type[3]
 		ctx := &operations.Context{
 			State:   s,
 			Account: s.AccountByAddress(tx.Address),
 		}
-		switch t {
-		case types.OP_Module:
-			return module.ProcessModuleOperation(ctx, v, op, tx.OperationData)
-		case types.OP_Cluster:
-			return module2.ProcessClusterOperation(ctx, v, op, tx.OperationData)
-		case types.OP_Operator:
-			return module4.ProcessOperatorOperation(ctx, v, op, tx.OperationData)
-		case types.OP_Account:
-			return module3.ProcessAccountOperation(ctx, v, op, tx.OperationData)
-		default:
-			return fmt.Errorf("unknown transaction type: %v", t)
+		if err := ProcessTransaction(ctx, tx); err != nil {
+			return &Receipt{Error: err}
 		}
+
+		gasConsumed += ctx.GasConsumed
 	}
 
+	return &Receipt{GasConsumed: gasConsumed}
+}
+
+func ProcessTransaction(ctx *operations.Context, tx *types.Transaction) error {
+	for _, op := range tx.Operations {
+		t := op.Type[1]
+		v := op.Type[2]
+		subOP := op.Type[3]
+		switch t {
+		case types.OP_Module:
+			return module.ProcessModuleOperation(ctx, v, subOP, op.OperationData)
+		case types.OP_Cluster:
+			return module2.ProcessClusterOperation(ctx, v, subOP, op.OperationData)
+		case types.OP_Operator:
+			return module4.ProcessOperatorOperation(ctx, v, subOP, op.OperationData)
+		case types.OP_Account:
+			return module3.ProcessAccountOperation(ctx, v, subOP, op.OperationData)
+		default:
+			return fmt.Errorf("unknown operation type: %v", t)
+		}
+	}
 	return nil
 }

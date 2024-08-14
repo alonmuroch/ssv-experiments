@@ -20,13 +20,15 @@ func processOperatorOperation(ctx *operations.Context, op byte, raw []byte) erro
 			return err
 		}
 
-		estimatedGas := uint64(gas.OperatorAdd + gas.PublicKeyStore)
-		if ctx.Account.Balance < estimatedGas {
+		gas := uint64(gas.OperatorAdd + gas.PublicKeyStore)
+		estimatedGasCost := ctx.GasCost(gas)
+		if ctx.Account.Balance < estimatedGasCost {
 			return fmt.Errorf("insufficient gas")
 		}
 
 		// update gas
-		ctx.Account.Balance -= estimatedGas
+		ctx.Account.Balance -= estimatedGasCost
+		ctx.GasConsumed = gas
 
 		// update operators
 		ctx.State.Operators = append(ctx.State.Operators, &types.Operator{

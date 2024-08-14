@@ -24,11 +24,17 @@ const (
 	OP_Withdraw  = 0x4
 )
 
-type Transaction struct {
-	Address []byte `ssz-max:"128"`
+type Operation struct {
 	// Type of transaction: byte[0] empty, byte[1] operation type (module, cluster, etc), byte[2] sub-operation type (add, remove, etc), byte[3] version
 	Type          [4]byte `ssz-size:"4"`
 	OperationData []byte  `ssz-max:"2048"`
+}
+
+type Transaction struct {
+	Address    []byte `ssz-max:"128"`
+	MaxGas     uint64
+	GasPrice   uint64
+	Operations []*Operation `ssz-max:"128"`
 }
 
 type SignedTransaction struct {
