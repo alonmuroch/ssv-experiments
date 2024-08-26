@@ -17,3 +17,7 @@ type State struct {
 func (s *State) AccountByAddress(address []byte) *Account {
 	panic("implement")
 }
+
+func (s *State) ModuleByID(id uint64) *Module {
+	panic("implement")
+}

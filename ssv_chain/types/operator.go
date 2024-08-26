@@ -10,5 +10,5 @@ type Operator struct {
 	// PublicKey the operator uses to send messages
 	PublicKey *common.CryptoKey
 	// Modules IDs registered to
-	Modules []uint64 `ssz-max:"16"`
+	Module uint64
 }

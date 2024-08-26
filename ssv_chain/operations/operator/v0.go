@@ -10,6 +10,7 @@ import (
 
 type addOperatorV0 struct {
 	PublicKey *common.CryptoKey
+	Module    uint64
 }
 
 func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
@@ -30,12 +31,17 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 		ctx.Account.Balance -= estimatedGasCost
 		ctx.GasConsumed = gas
 
+		// Verify module exists, if not fail and consume gas
+		if ctx.State.ModuleByID(opObj.Module) == nil {
+			return fmt.Errorf("module not found")
+		}
+
 		// update operators
 		ctx.State.Operators = append(ctx.State.Operators, &types.Operator{
 			Account:   ctx.Account.ID,
 			ID:        uint64(len(ctx.State.Operators)),
 			PublicKey: opObj.PublicKey,
-			Modules:   make([]uint64, 0),
+			Module:    opObj.Module,
 		})
 		return nil
 	default:
