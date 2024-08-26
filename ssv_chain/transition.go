@@ -4,10 +4,10 @@ import (
 	"fmt"
 	v1 "github.com/cometbft/cometbft/api/cometbft/abci/v1"
 	"ssv-experiments/ssv_chain/operations"
-	module3 "ssv-experiments/ssv_chain/operations/account"
-	module2 "ssv-experiments/ssv_chain/operations/cluster"
-	"ssv-experiments/ssv_chain/operations/module"
-	module4 "ssv-experiments/ssv_chain/operations/operator"
+	account "ssv-experiments/ssv_chain/operations/account"
+	cluster "ssv-experiments/ssv_chain/operations/cluster"
+	module "ssv-experiments/ssv_chain/operations/module"
+	operator "ssv-experiments/ssv_chain/operations/operator"
 	"ssv-experiments/ssv_chain/types"
 )
 
@@ -59,13 +59,13 @@ func ProcessTransaction(ctx *operations.Context, tx *types.Transaction) error {
 		subOP := op.Type[3]
 		switch t {
 		case types.OP_Module:
-			return module.ProcessModuleOperation(ctx, v, subOP, op.OperationData)
+			return module.ProcessOperation(ctx, v, subOP, op.OperationData)
 		case types.OP_Cluster:
-			return module2.ProcessClusterOperation(ctx, v, subOP, op.OperationData)
+			return cluster.ProcessOperation(ctx, v, subOP, op.OperationData)
 		case types.OP_Operator:
-			return module4.ProcessOperatorOperation(ctx, v, subOP, op.OperationData)
+			return operator.ProcessOperation(ctx, v, subOP, op.OperationData)
 		case types.OP_Account:
-			return module3.ProcessAccountOperation(ctx, v, subOP, op.OperationData)
+			return account.ProcessOperation(ctx, v, subOP, op.OperationData)
 		default:
 			return fmt.Errorf("unknown operation type: %v", t)
 		}

@@ -12,7 +12,7 @@ type addOperatorV0 struct {
 	PublicKey *common.CryptoKey
 }
 
-func processOperatorOperation(ctx *operations.Context, op byte, raw []byte) error {
+func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 	switch op {
 	case types.OP_Add:
 		opObj := &addOperatorV0{}
