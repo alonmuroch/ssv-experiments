@@ -2,7 +2,6 @@ package ssv_chain
 
 import (
 	"fmt"
-	v1 "github.com/cometbft/cometbft/api/cometbft/abci/v1"
 	"ssv-experiments/ssv_chain/operations"
 	account "ssv-experiments/ssv_chain/operations/account"
 	cluster "ssv-experiments/ssv_chain/operations/cluster"
@@ -10,24 +9,6 @@ import (
 	operator "ssv-experiments/ssv_chain/operations/operator"
 	"ssv-experiments/ssv_chain/types"
 )
-
-// ProcessBlock is a CometBFT compatible request that is called during FinalizeBlock.
-//
-//	It applies the block to the state and returns a CometBFT compatible response
-func ProcessBlock(state *types.State, req *v1.FinalizeBlockRequest) (*v1.FinalizeBlockResponse, error) {
-	if err := ApplyBlockHeight(state, uint64(req.Height)); err != nil {
-		return nil, err
-	}
-	panic("implement")
-}
-
-func ApplyBlockHeight(state *types.State, newHeight uint64) error {
-	if state.BlockHeight+1 != newHeight {
-		return fmt.Errorf("invalid height")
-	}
-	state.BlockHeight++
-	return nil
-}
 
 type Receipt struct {
 	GasConsumed uint64
