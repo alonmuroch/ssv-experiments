@@ -38,9 +38,14 @@ type Receipt struct {
 func ProcessTransactions(s *types.State, txs []*types.Transaction) *Receipt {
 	gasConsumed := uint64(0)
 	for _, tx := range txs {
+		acc := s.AccountByAddress(tx.Address)
+		if acc == nil {
+			return &Receipt{Error: fmt.Errorf("account not found")}
+		}
+
 		ctx := &operations.Context{
 			State:   s,
-			Account: s.AccountByAddress(tx.Address),
+			Account: acc,
 		}
 		if err := ProcessTransaction(ctx, tx); err != nil {
 			return &Receipt{Error: err}
@@ -53,6 +58,10 @@ func ProcessTransactions(s *types.State, txs []*types.Transaction) *Receipt {
 }
 
 func ProcessTransaction(ctx *operations.Context, tx *types.Transaction) error {
+	if ctx.Account.Nonce != tx.Nonce {
+		return fmt.Errorf("wrong nonce")
+	}
+
 	for _, op := range tx.Operations {
 		t := op.Type[1]
 		v := op.Type[2]
@@ -70,5 +79,8 @@ func ProcessTransaction(ctx *operations.Context, tx *types.Transaction) error {
 			return fmt.Errorf("unknown operation type: %v", t)
 		}
 	}
+
+	ctx.Account.Nonce++
+
 	return nil
 }
