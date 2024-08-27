@@ -3,6 +3,7 @@ package operations
 import "ssv-experiments/ssv_chain/types"
 
 type Context struct {
+	Config *types.Configure
 	// State is the pre-state before executing the tx
 	State *types.State
 	// Account executing the tx
@@ -11,8 +12,6 @@ type Context struct {
 	GasPrice uint64
 	// GasConsumed is set when tx applied to state
 	GasConsumed uint64
-
-	Error error
 }
 
 func (ctx *Context) GasCost(gas uint64) uint64 {

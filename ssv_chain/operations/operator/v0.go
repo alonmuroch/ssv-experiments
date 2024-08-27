@@ -11,6 +11,7 @@ import (
 type addOperatorV0 struct {
 	PublicKey *common.CryptoKey
 	Module    uint64
+	Tiers     []*types.PriceTier `ssz-max:"16"`
 }
 
 func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
@@ -21,30 +22,48 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 			return err
 		}
 
-		gas := uint64(gas.OperatorAdd + gas.PublicKeyStore)
-		estimatedGasCost := ctx.GasCost(gas)
-		if ctx.Account.Balance < estimatedGasCost {
-			return fmt.Errorf("insufficient gas")
+		// calculate and consume gas
+		estimatedGas := uint64(gas.OperatorAdd + gas.PublicKeyStore)
+		estimatedGasCost := ctx.GasCost(estimatedGas)
+		if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
+			return err
 		}
-
-		// update gas
-		ctx.Account.Balance -= estimatedGasCost
-		ctx.GasConsumed = gas
 
 		// Verify module exists, if not fail and consume gas
 		if ctx.State.ModuleByID(opObj.Module) == nil {
 			return fmt.Errorf("module not found")
 		}
 
+		// Validate price tiers, if not fail and consume gas
+		if err := validateV0PriceTiers(opObj.Tiers); err != nil {
+			return err
+		}
+
 		// update operators
 		ctx.State.Operators = append(ctx.State.Operators, &types.Operator{
-			Account:   ctx.Account.ID,
+			Address:   ctx.Account.Address,
 			ID:        uint64(len(ctx.State.Operators)),
 			PublicKey: opObj.PublicKey,
 			Module:    opObj.Module,
+			Tiers:     opObj.Tiers,
 		})
 		return nil
 	default:
 		return fmt.Errorf("unknown operation")
 	}
+}
+
+func validateV0PriceTiers(tiers []*types.PriceTier) error {
+	if len(tiers) == 0 {
+		return fmt.Errorf("no price tiers")
+	}
+
+	for _, t := range tiers {
+		// Verify network exists, if not fail and consume gas
+		if !common.IsSupportedNetwork(t.Network) {
+			return fmt.Errorf("network not found")
+		}
+	}
+
+	return nil
 }

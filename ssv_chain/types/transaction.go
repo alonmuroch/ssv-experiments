@@ -32,6 +32,7 @@ type Operation struct {
 
 type Transaction struct {
 	Address    []byte `ssz-max:"128"`
+	Nonce      uint64
 	MaxGas     uint64
 	GasPrice   uint64
 	Operations []*Operation `ssz-max:"128"`

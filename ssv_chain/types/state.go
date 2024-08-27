@@ -14,6 +14,7 @@ type State struct {
 	Modules   []*Module   `ssz-max:"65536"`   // 2^16
 }
 
+// AccountByAddress returns account by address, if not found nil
 func (s *State) AccountByAddress(address []byte) *Account {
 	panic("implement")
 }
