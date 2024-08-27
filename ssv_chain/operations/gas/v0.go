@@ -5,11 +5,12 @@ import (
 )
 
 const (
-	ByteData       = 1
-	OperatorAdd    = 10
-	PublicKeyStore = 5
-	ModuleAdd      = 50
-	DepositBalance = 5
+	ByteData        = 1
+	OperatorAdd     = 10
+	PublicKeyStore  = 5
+	ModuleAdd       = 50
+	DepositBalance  = 5
+	WithdrawBalance = 10
 )
 
 // ConsumeGas consumes SSV gas for account, returns error if failed (insufficient, etc.)

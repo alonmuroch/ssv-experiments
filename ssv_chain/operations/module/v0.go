@@ -28,6 +28,7 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 		if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
 			return err
 		}
+		ctx.GasConsumed += estimatedGas
 
 		// Verify network exists, if not fail and consume gas
 		if !common.IsSupportedNetwork(opObj.Network) {
