@@ -10,7 +10,7 @@ import (
 
 type addOperatorV0 struct {
 	PublicKey *common.CryptoKey
-	Module    uint64
+	ModuleID  uint64
 	Tiers     []*types.PriceTier `ssz-max:"16"`
 }
 
@@ -31,7 +31,7 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 		ctx.GasConsumed += estimatedGas
 
 		// Verify module exists, if not fail and consume gas
-		if ctx.State.ModuleByID(opObj.Module) == nil {
+		if ctx.State.ModuleByID(opObj.ModuleID) == nil {
 			return fmt.Errorf("module not found")
 		}
 
@@ -45,7 +45,7 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 			Address:   ctx.Account.Address,
 			ID:        uint64(len(ctx.State.Operators)),
 			PublicKey: opObj.PublicKey,
-			Module:    opObj.Module,
+			Module:    opObj.ModuleID,
 			Tiers:     opObj.Tiers,
 		})
 		return nil

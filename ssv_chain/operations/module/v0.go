@@ -15,7 +15,7 @@ type addModuleV0 struct {
 
 func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 	switch op {
-	// OP_Add is a user event
+	// OP_Add is a user event for creating a new module
 	case types.OP_Add:
 		opObj := &addModuleV0{}
 		if err := opObj.UnmarshalSSZ(raw); err != nil {

@@ -1,16 +1,21 @@
 package gas
 
 import (
+	"ssv-experiments/ssv_chain/common"
 	"ssv-experiments/ssv_chain/operations"
 )
 
 const (
-	ByteData        = 1
-	OperatorAdd     = 10
-	PublicKeyStore  = 5
-	ModuleAdd       = 50
-	DepositBalance  = 5
-	WithdrawBalance = 10
+	ByteData              = common.OneHundredthSSV
+	OperatorAdd           = common.OneSSV
+	PublicKeyStore        = common.TenthSSV * 5
+	ModuleAdd             = common.OneSSV * 5
+	DepositBalance        = common.TenthSSV * 5
+	WithdrawBalance       = common.OneSSV
+	ClusterAdd            = common.OneSSV * 5
+	ClusterModify         = common.OneSSV * 5
+	ClusterInstanceAdd    = common.TenthSSV * 5
+	ClusterInstanceRemove = common.TenthSSV * 5
 )
 
 // ConsumeGas consumes SSV gas for account, returns error if failed (insufficient, etc.)

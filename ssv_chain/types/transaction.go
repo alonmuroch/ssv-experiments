@@ -21,9 +21,10 @@ const (
 const (
 	OP_Add       = 0x0
 	OP_Remove    = 0x1
-	OP_ChangeFee = 0x2
-	OP_Deposit   = 0x3
-	OP_Withdraw  = 0x4
+	OP_Modify    = 0x2
+	OP_ChangeFee = 0x3
+	OP_Deposit   = 0x4
+	OP_Withdraw  = 0x5
 )
 
 type Operation struct {

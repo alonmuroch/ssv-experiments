@@ -24,6 +24,12 @@ func (s *State) CreateAccountForAddress(address []byte) *Account {
 	panic("implement")
 }
 
+// ModuleByID returns module by ID or nil if not found
 func (s *State) ModuleByID(id uint64) *Module {
+	panic("implement")
+}
+
+// ClusterByID returns cluster by ID or nil if not found
+func (s *State) ClusterByID(id uint64) *Cluster {
 	panic("implement")
 }
