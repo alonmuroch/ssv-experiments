@@ -5,7 +5,7 @@ type State struct {
 	// Domain represents: byte[0] empty, byte[1] empty, byte[2] network ID, byte[3] fork ID
 	Domain                [4]byte `ssz-size:"4"`
 	BlockHeight           uint64
-	LatestBlockHeaderHash [32]byte     `ssz-size:"32"`
+	LatestBlockHeaderHash []byte       `ssz-size:"32"`
 	Validators            []*Validator `ssz-max:"128"`
 	/*  Registry */
 	Accounts  []*Account  `ssz-max:"65536"`   // 2^16
