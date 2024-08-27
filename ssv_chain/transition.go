@@ -35,18 +35,19 @@ type Receipt struct {
 }
 
 // ProcessTransactions processes and applies transactions on state, returns nil if valid
-func ProcessTransactions(s *types.State, txs []*types.Transaction) *Receipt {
+// Transactions should be VALIDATED!! for signatures before being included
+func ProcessTransactions(
+	ctx *operations.Context,
+	s *types.State,
+	txs []*types.Transaction,
+) *Receipt {
 	gasConsumed := uint64(0)
 	for _, tx := range txs {
-		acc := s.AccountByAddress(tx.Address)
-		if acc == nil {
+		ctx.Account = s.AccountByAddress(tx.Address)
+		if ctx.Account == nil {
 			return &Receipt{Error: fmt.Errorf("account not found")}
 		}
 
-		ctx := &operations.Context{
-			State:   s,
-			Account: acc,
-		}
 		if err := ProcessTransaction(ctx, tx); err != nil {
 			return &Receipt{Error: err}
 		}

@@ -25,3 +25,7 @@ func (account *Account) SufficientBalance(balance uint64, tokenAddress []byte, n
 func (account *Account) ReduceBalance(balance uint64, tokenAddress []byte, network [4]byte) error {
 	panic("implement")
 }
+
+func (account *Account) DepositBalance(newBalance *Balance) {
+	panic("implement")
+}

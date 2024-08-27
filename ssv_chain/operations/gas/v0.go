@@ -9,6 +9,7 @@ const (
 	OperatorAdd    = 10
 	PublicKeyStore = 5
 	ModuleAdd      = 50
+	DepositBalance = 5
 )
 
 // ConsumeGas consumes SSV gas for account, returns error if failed (insufficient, etc.)

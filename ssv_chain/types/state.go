@@ -19,6 +19,11 @@ func (s *State) AccountByAddress(address []byte) *Account {
 	panic("implement")
 }
 
+// CreateAccountForAddress creates and adds account for address if not found
+func (s *State) CreateAccountForAddress(address []byte) *Account {
+	panic("implement")
+}
+
 func (s *State) ModuleByID(id uint64) *Module {
 	panic("implement")
 }
