@@ -101,6 +101,7 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 		if err := addInstancesToCluster(ctx, cluster, opObj.InstancesToAdd); err != nil {
 			return err
 		}
+		return nil
 	default:
 		return fmt.Errorf("unknown operation")
 	}
