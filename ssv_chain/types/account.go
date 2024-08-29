@@ -7,8 +7,6 @@ type Account struct {
 	Nonce uint64
 	// Balances per token and network
 	Balances []*Balance `ssz-max:"128"`
-	// Withdrawable amount of withdrawable balance in SSV tokens
-	Withdrawable uint64
 }
 
 // BalanceByTokenAddress returns balance by token address or nil if not found
@@ -21,8 +19,18 @@ func (account *Account) SufficientBalance(balance uint64, tokenAddress []byte, n
 	panic("implement")
 }
 
-// ReduceBalance reduces balance for token, returns error if not sufficient balance
+// ReduceBalance reduces balance for token, if balance available and not locked. Returns error if not sufficient balance
 func (account *Account) ReduceBalance(balance uint64, tokenAddress []byte, network [4]byte) error {
+	panic("implement")
+}
+
+// LockBalance locks balance for token, if balanceToLock <= (balance - locked)
+func (account *Account) LockBalance(balanceToLock uint64, tokenAddress []byte, network [4]byte) error {
+	panic("implement")
+}
+
+// ReleaseBalance releases balance for token, if balanceToLock <= locked
+func (account *Account) ReleaseBalance(balanceToRelease uint64, tokenAddress []byte, network [4]byte) error {
 	panic("implement")
 }
 

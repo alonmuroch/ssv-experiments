@@ -16,6 +16,7 @@ const (
 	ClusterModify         = common.OneSSV * 5
 	ClusterInstanceAdd    = common.TenthSSV * 5
 	ClusterInstanceRemove = common.TenthSSV * 5
+	LockUnlockStake       = common.TenthSSV * 5
 )
 
 // ConsumeGas consumes SSV gas for account, returns error if failed (insufficient, etc.)

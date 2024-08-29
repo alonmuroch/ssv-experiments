@@ -12,10 +12,12 @@ const (
 )
 
 const (
-	OP_Module   = 0x0
-	OP_Cluster  = 0x1
-	OP_Operator = 0x2
-	OP_Account  = 0x3
+	OP_Module    = 0x0
+	OP_Cluster   = 0x1
+	OP_Operator  = 0x2
+	OP_Account   = 0x3
+	OP_Stake     = 0x4
+	OP_Validator = 0x5
 )
 
 const (
@@ -25,6 +27,8 @@ const (
 	OP_ChangeFee = 0x3
 	OP_Deposit   = 0x4
 	OP_Withdraw  = 0x5
+	OP_Lock      = 0x6
+	OP_Release   = 0x7
 )
 
 type Operation struct {
