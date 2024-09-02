@@ -6,11 +6,6 @@ import (
 	"ssv-experiments/ssv_chain/common"
 )
 
-type Share struct {
-	Key        *common.CryptoKey
-	OperatorID uint64
-}
-
 type ClusterInstance struct {
 	// Keys holds operator shares per Cluster.Operators
 	Keys []*common.CryptoKey `ssz-max:"13"`

@@ -10,7 +10,7 @@ type Account struct {
 }
 
 // BalanceByTokenAddress returns balance by token address or nil if not found
-func (account *Account) BalanceByTokenAddress(address []byte) *Balance {
+func (account *Account) BalanceByTokenAddress(address []byte, network [4]byte) *Balance {
 	panic("implement")
 }
 

@@ -3,10 +3,11 @@ package types
 import "ssv-experiments/ssv_chain/common"
 
 type PriceTier struct {
-	Network  [4]byte `ssz-size:"4"`
+	Network [4]byte `ssz-size:"4"`
+	// Capacity limits how many validators can be assigned to this price tier
 	Capacity uint16
-	// PricePerToken is how many payable tokens will be paid, per block, for each unit of network token (e.g. ethereum)
-	PricePerToken uint64
+	// Price is how many payable tokens will be paid, per block
+	Price uint64
 	// PayableTokenAddress is the L1 address of the token paid for this tier
 	PayableTokenAddress []byte `ssz-max:"64"`
 	// WhitelistedAddress that can register to this tier, if empty any address can

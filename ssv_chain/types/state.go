@@ -33,3 +33,8 @@ func (s *State) ModuleByID(id uint64) *Module {
 func (s *State) ClusterByID(id uint64) *Cluster {
 	panic("implement")
 }
+
+// ValidatorByAddress returns validator by address or nil if not found
+func (s *State) ValidatorByAddress(address []byte) *Validator {
+	panic("implement")
+}
