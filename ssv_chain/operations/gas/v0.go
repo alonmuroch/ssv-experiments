@@ -6,17 +6,27 @@ import (
 )
 
 const (
-	ByteData              = common.OneHundredthSSV
-	OperatorAdd           = common.OneSSV
-	PublicKeyStore        = common.TenthSSV * 5
-	ModuleAdd             = common.OneSSV * 5
-	DepositBalance        = common.TenthSSV * 5
-	WithdrawBalance       = common.OneSSV
+	ByteData       = common.OneHundredthSSV
+	OperatorAdd    = common.OneSSV
+	PublicKeyStore = common.TenthSSV * 5
+	ModuleAdd      = common.OneSSV * 5
+
+	// balance
+	DepositBalance  = common.TenthSSV * 5
+	WithdrawBalance = common.OneSSV
+
+	// cluster
 	ClusterAdd            = common.OneSSV * 5
 	ClusterModify         = common.OneSSV * 5
 	ClusterInstanceAdd    = common.TenthSSV * 5
 	ClusterInstanceRemove = common.TenthSSV * 5
-	LockUnlockStake       = common.TenthSSV * 5
+
+	// staking
+	LockUnlockStake = common.TenthSSV * 5
+	DelegateStake   = common.TenthSSV * 5
+
+	// validator
+	ValidatorAdd = common.OneSSV
 )
 
 // ConsumeGas consumes SSV gas for account, returns error if failed (insufficient, etc.)

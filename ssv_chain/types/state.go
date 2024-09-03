@@ -38,3 +38,8 @@ func (s *State) ClusterByID(id uint64) *Cluster {
 func (s *State) ValidatorByAddress(address []byte) *Validator {
 	panic("implement")
 }
+
+// ValidatorByID returns validator by ID or nil if not found
+func (s *State) ValidatorByID(id uint64) *Validator {
+	panic("implement")
+}

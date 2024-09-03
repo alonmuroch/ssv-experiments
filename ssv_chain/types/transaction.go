@@ -29,6 +29,7 @@ const (
 	OP_Withdraw  = 0x5
 	OP_Lock      = 0x6
 	OP_Release   = 0x7
+	OP_Delegate  = 0x8
 )
 
 type Operation struct {
