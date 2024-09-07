@@ -46,12 +46,20 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 			return fmt.Errorf("module not found")
 		}
 
+		// verify operators exist
+		for _, indx := range opObj.Operators {
+			if ctx.State.Operators[indx] == nil {
+				return fmt.Errorf("operator not found")
+			}
+		}
+
 		cluster := &types.Cluster{
 			ID:          uint64(len(ctx.State.Clusters)),
 			ModuleID:    opObj.ModuleID,
 			Address:     ctx.Account.Address,
 			Operators:   opObj.Operators,
 			FaultyNodes: opObj.FaultyNodes,
+			Active:      true,
 			Instances:   make([]*types.ClusterInstance, len(opObj.Instances)),
 		}
 
@@ -94,7 +102,7 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 			ctx.GasConsumed += estimatedGas
 
 			// remove
-			cluster.RemoveInstance(inst)
+			removeClusterInstance(inst)
 		}
 
 		// add instances to cluster
@@ -111,6 +119,11 @@ func estimateAddClusterInstanceGas(ci *types.ClusterInstance) uint64 {
 	return uint64(gas.ClusterInstanceAdd + len(ci.Metadata)*gas.ByteData)
 }
 
+// RemoveInstance removes cluster instance if found
+func removeClusterInstance(instance *types.ClusterInstance) {
+	panic("implement")
+}
+
 func addInstancesToCluster(ctx *operations.Context, cluster *types.Cluster, instances []*types.ClusterInstance) error {
 	for i, inst := range instances {
 		if len(inst.Keys) != len(cluster.Operators) {
@@ -124,6 +137,19 @@ func addInstancesToCluster(ctx *operations.Context, cluster *types.Cluster, inst
 			return err
 		}
 		ctx.GasConsumed += estimatedGas
+
+		// validate and add to operator price tiers
+		for i, opIdx := range cluster.Operators {
+			op := ctx.State.Operators[opIdx] // operator existence should be validated previously
+			if uint64(len(op.Tiers)) < inst.PriceTierIndexes[i] {
+				return fmt.Errorf("invalid price tier")
+			}
+			tier := op.Tiers[inst.PriceTierIndexes[i]]
+			if tier.Capacity <= tier.Registered {
+				return fmt.Errorf("capacity full")
+			}
+			tier.Registered++
+		}
 
 		// add instance
 		cluster.Instances[i] = inst

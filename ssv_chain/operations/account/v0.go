@@ -51,7 +51,7 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 			if !bytes.Equal(b.Network[:], ctx.Account.Network[:]) {
 				return fmt.Errorf("not account network")
 			}
-			ctx.Account.DepositBalance(b)
+			ctx.Account.AddBalance(b.Amount, b.TokenAddress, b.Network)
 		}
 
 		return nil

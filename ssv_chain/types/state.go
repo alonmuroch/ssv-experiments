@@ -48,3 +48,8 @@ func (s *State) ValidatorByAddress(address []byte) *Validator {
 func (s *State) ValidatorByID(id uint64) *Validator {
 	panic("implement")
 }
+
+// OperatorAccountsByID returns operator accounts by ID
+func (s *State) OperatorAccountsByID(ids []uint64) []*Account {
+	panic("implement")
+}

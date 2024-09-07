@@ -36,6 +36,7 @@ func (account *Account) ReleaseBalance(balanceToRelease uint64, tokenAddress []b
 	panic("implement")
 }
 
-func (account *Account) DepositBalance(newBalance *Balance) {
+// AddBalance adds to balance (if exists) or creates new balance for account
+func (account *Account) AddBalance(balance uint64, tokenAddress []byte, network [4]byte) {
 	panic("implement")
 }

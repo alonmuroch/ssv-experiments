@@ -173,7 +173,29 @@ func (app *App) ApplyTransactions(txsRaw [][]byte) (*types.State, []*v1.ExecTxRe
 
 // UpdateBalancesPerFee will apply fee calculation across all accounts
 func (app *App) UpdateBalancesPerFee() error {
-	panic("implement")
+	for _, c := range app.State.Clusters {
+		billableAccount := app.State.AccountByAddress(c.Address)
+		if !c.Active {
+			continue
+		}
+	clusterLoop:
+		for _, inst := range c.Instances {
+			operatorAccounts := app.State.OperatorAccountsByID(c.Operators)
+
+			for i, priceTierIndex := range inst.PriceTierIndexes {
+				op := app.State.Operators[i]
+				priceTier := op.Tiers[priceTierIndex]
+				if err := billableAccount.ReduceBalance(priceTier.Price, priceTier.PayableTokenAddress, priceTier.Network); err != nil {
+					// if billable account can't be charge, mark cluster as not active and break.
+					// Operators will not get paid for this block, but will stop executing for this cluster
+					c.Active = false
+					break clusterLoop // break instances loop
+				}
+				operatorAccounts[i].AddBalance(priceTier.Price, priceTier.PayableTokenAddress, priceTier.Network)
+			}
+		}
+	}
+	return nil
 }
 
 func (app *App) ApplyBlockHeight(state *types.State, newHeight uint64) error {

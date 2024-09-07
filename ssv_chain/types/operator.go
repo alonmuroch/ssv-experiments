@@ -6,6 +6,8 @@ type PriceTier struct {
 	Network [4]byte `ssz-size:"4"`
 	// Capacity limits how many validators can be assigned to this price tier
 	Capacity uint16
+	// Registered marks how many cluster instances use this price tier
+	Registered uint16
 	// Price is how many payable tokens will be paid, per block
 	Price uint64
 	// PayableTokenAddress is the L1 address of the token paid for this tier

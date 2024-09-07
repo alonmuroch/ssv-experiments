@@ -7,6 +7,8 @@ import (
 )
 
 type ClusterInstance struct {
+	// PriceTierIndexes holds for each operator the price tier this cluster instance uses
+	PriceTierIndexes []uint64 `ssz-max:"13"`
 	// Keys holds operator shares per Cluster.Operators
 	Keys []*common.CryptoKey `ssz-max:"13"`
 	// Metadata is an open meta data container for application specific cluster instance info (e.g. validator pubkey, ID, etc.)
@@ -24,6 +26,8 @@ type Cluster struct {
 	Operators []uint64 `ssz-max:"13"`
 	// FaultyNodes represents the number of faulty nodes a cluster can sustain (fault tolerance)
 	FaultyNodes uint64
+	// Active is true when cluster is active, if false all operators should not execute per this cluster
+	Active bool
 	// Instances represents cluster instances for a specific module and account (e.g. staking module)
 	Instances []*ClusterInstance `ssz-max:"500"`
 }
@@ -46,9 +50,4 @@ func (c *Cluster) FindClusterInstance(instance *ClusterInstance) (uint64, error)
 		}
 	}
 	return 0, fmt.Errorf("not found")
-}
-
-// RemoveInstance removes cluster instance if found
-func (c *Cluster) RemoveInstance(instance *ClusterInstance) {
-	panic("implement")
 }
