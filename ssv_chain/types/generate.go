@@ -13,16 +13,16 @@ package types
 //go:generate go run github.com/ferranbt/fastssz/sszgen --path account.go  --include ./balance.go
 
 //go:generate rm -f ./cluster_encoding.go
-//go:generate go run github.com/ferranbt/fastssz/sszgen --path cluster.go --include ../common/crypto.go
+//go:generate go run github.com/ferranbt/fastssz/sszgen --path cluster.go --include ../common/crypto_key.go
 
 //go:generate rm -f ./module_encoding.go
 //go:generate go run github.com/ferranbt/fastssz/sszgen --path module.go
 
 //go:generate rm -f ./operator_encoding.go
-//go:generate go run github.com/ferranbt/fastssz/sszgen --path operator.go --include ../common/crypto.go
+//go:generate go run github.com/ferranbt/fastssz/sszgen --path operator.go --include ../common/crypto_key.go
 
 //go:generate rm -f ./state_encoding.go
-//go:generate go run github.com/ferranbt/fastssz/sszgen --path state.go --include ./validator.go,./account.go,./cluster.go,./operator.go,./module.go,../common/crypto.go,./balance.go
+//go:generate go run github.com/ferranbt/fastssz/sszgen --path state.go --include ./validator.go,./account.go,./cluster.go,./operator.go,./module.go,../common/crypto_key.go,./balance.go
 
 //go:generate rm -f ./validator_encoding.go
-//go:generate go run github.com/ferranbt/fastssz/sszgen --path validator.go --include ../common/crypto.go
+//go:generate go run github.com/ferranbt/fastssz/sszgen --path validator.go --include ../common/crypto_key.go

@@ -14,6 +14,11 @@ type State struct {
 	Modules   []*Module   `ssz-max:"65536"`   // 2^16
 }
 
+// DeepCopy returns a deeply copied state, pointers are deep copied as well
+func (s *State) DeepCopy() *State {
+	panic("implement")
+}
+
 // AccountByAddress returns account by address, if not found nil
 func (s *State) AccountByAddress(address []byte) *Account {
 	panic("implement")

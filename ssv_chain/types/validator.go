@@ -20,7 +20,7 @@ type Validator struct {
 	PublicKey *common.CryptoKey
 }
 
-func (v *Validator) Penalize(state *State, config Configure, amount uint64) error {
+func (v *Validator) Penalize(state *State, config *Configure, amount uint64) error {
 	acc := state.AccountByAddress(v.Address)
 	if acc == nil {
 		return fmt.Errorf("account not found")
@@ -29,7 +29,7 @@ func (v *Validator) Penalize(state *State, config Configure, amount uint64) erro
 	return acc.ReduceBalance(amount, config.MainSSVTokenAddress, config.MainSSVTokenNetwork)
 }
 
-func (v *Validator) Slash(state *State, config Configure) error {
+func (v *Validator) Slash(state *State, config *Configure) error {
 	v.Active = false
 	v.Slashed = true
 	v.VotingPower = 0

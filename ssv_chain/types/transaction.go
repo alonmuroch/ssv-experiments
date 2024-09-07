@@ -47,6 +47,8 @@ type Transaction struct {
 }
 
 type SignedTransaction struct {
-	Signature   []byte `ssz-size:"1024"`
+	Signature []byte `ssz-size:"1024"`
+	// Signer is the L1 account that signed the transaction
+	Signer      []byte `ssz-max:"128"`
 	Transaction Transaction
 }

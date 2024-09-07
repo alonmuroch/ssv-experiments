@@ -1,6 +1,7 @@
 package account
 
 import (
+	"bytes"
 	"fmt"
 	"ssv-experiments/ssv_chain/operations"
 	"ssv-experiments/ssv_chain/operations/gas"
@@ -38,8 +39,6 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 		estimatedGasCost := ctx.GasCost(estimatedGas)
 		// add balances
 		for _, b := range opObj.Balances {
-			ctx.Account.DepositBalance(b)
-
 			// consume gas
 			if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
 				ctx.GasConsumed += estimatedGas
@@ -47,8 +46,12 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 				ctx.Account.ReduceBalance(b.Amount, b.TokenAddress, b.Network)
 				return err
 			}
-
 			ctx.GasConsumed += estimatedGas
+
+			if !bytes.Equal(b.Network[:], ctx.Account.Network[:]) {
+				return fmt.Errorf("not account network")
+			}
+			ctx.Account.DepositBalance(b)
 		}
 
 		return nil

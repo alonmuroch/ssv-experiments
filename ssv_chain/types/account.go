@@ -1,6 +1,8 @@
 package types
 
 type Account struct {
+	// Network on which the account exists
+	Network [4]byte `ssz-size:"4"`
 	// Address is an L1 address controlling the account
 	Address []byte `ssz-max:"128"`
 	// Nonce is a nonce of the account, starting with 0

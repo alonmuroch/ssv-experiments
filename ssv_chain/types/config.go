@@ -6,6 +6,10 @@ import "bytes"
 type Configure struct {
 	SupportedNetworks [][]byte `ssz-max:"12,4"`
 
+	// Transactions
+	// SystemTxSigner is the address from which system transactions are "signed" with
+	SystemTxSigner []byte `ssz-max:"128"`
+
 	// SSV token
 	SSVTokenAddressByNetwork [][]byte `ssz-max:"12,128"`
 	MainSSVTokenNetwork      [4]byte  `ssz-size:"4"`

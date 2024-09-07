@@ -7,12 +7,15 @@ import (
 	cluster "ssv-experiments/ssv_chain/operations/cluster"
 	module "ssv-experiments/ssv_chain/operations/module"
 	operator "ssv-experiments/ssv_chain/operations/operator"
+	"ssv-experiments/ssv_chain/operations/stake"
+	"ssv-experiments/ssv_chain/operations/validator"
 	"ssv-experiments/ssv_chain/types"
 )
 
 type Receipt struct {
+	GasPerTx    []uint64
 	GasConsumed uint64
-	Error       error
+	Errors      []error
 }
 
 // ProcessTransactions processes and applies transactions on state, returns nil if valid
@@ -23,20 +26,28 @@ func ProcessTransactions(
 	txs []*types.Transaction,
 ) *Receipt {
 	gasConsumed := uint64(0)
-	for _, tx := range txs {
+	gasPerTx := make([]uint64, len(txs))
+	errors := make([]error, len(txs))
+	for i, tx := range txs {
 		ctx.Account = s.AccountByAddress(tx.Address)
 		if ctx.Account == nil {
-			return &Receipt{Error: fmt.Errorf("account not found")}
+			errors[i] = fmt.Errorf("account not found")
+			continue
 		}
 
 		if err := ProcessTransaction(ctx, tx); err != nil {
-			return &Receipt{Error: err}
+			errors[i] = err
 		}
 
+		gasPerTx[i] = ctx.GasConsumed
 		gasConsumed += ctx.GasConsumed
 	}
 
-	return &Receipt{GasConsumed: gasConsumed}
+	return &Receipt{
+		GasPerTx:    gasPerTx,
+		GasConsumed: gasConsumed,
+		Errors:      errors,
+	}
 }
 
 func ProcessTransaction(ctx *operations.Context, tx *types.Transaction) error {
@@ -57,6 +68,10 @@ func ProcessTransaction(ctx *operations.Context, tx *types.Transaction) error {
 			return operator.ProcessOperation(ctx, v, subOP, op.OperationData)
 		case types.OP_Account:
 			return account.ProcessOperation(ctx, v, subOP, op.OperationData)
+		case types.OP_Stake:
+			return stake.ProcessOperation(ctx, v, subOP, op.OperationData)
+		case types.OP_Validator:
+			return validator.ProcessOperation(ctx, v, subOP, op.OperationData)
 		default:
 			return fmt.Errorf("unknown operation type: %v", t)
 		}
