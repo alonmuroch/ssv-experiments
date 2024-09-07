@@ -145,8 +145,8 @@ func addInstancesToCluster(ctx *operations.Context, cluster *types.Cluster, inst
 				return fmt.Errorf("invalid price tier")
 			}
 			tier := op.Tiers[inst.PriceTierIndexes[i]]
-			if tier.Capacity <= tier.Registered {
-				return fmt.Errorf("capacity full")
+			if !tier.CanRegister(ctx.Account.Address) {
+				return fmt.Errorf("invalid register")
 			}
 			tier.Registered++
 		}

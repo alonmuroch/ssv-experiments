@@ -16,6 +16,11 @@ type PriceTier struct {
 	WhitelistedAddress [][]byte `ssz-max:"64,128"`
 }
 
+// CanRegister returns true if can register cluster instance, checks for registering address and capacity
+func (tier *PriceTier) CanRegister(account []byte) bool {
+	panic("implement")
+}
+
 type Operator struct {
 	// Address that controls the operator
 	Address []byte `ssz-max:"128"`
