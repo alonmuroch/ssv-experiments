@@ -14,7 +14,7 @@ const (
 type CryptoKey struct {
 	// Type represents the cryptography standard for the key: byte[0] cryptography standard type (RSA, BLS, etc), byte[1] type (public key, encrypted private key, etc)
 	Type [2]byte `ssz-size:"2"`
-	PK   []byte  `ssz-max:"1024"`
+	Key  []byte  `ssz-max:"1024"`
 }
 
 func (key *CryptoKey) VerifySignature(sig []byte) error {

@@ -60,7 +60,7 @@ func (app *App) ApplyValidatorRewardsPenalties(misbehavior []v1.Misbehavior, com
 
 			ret = append(ret, v1.ValidatorUpdate{
 				Power:       0,
-				PubKeyBytes: val.PublicKey.PK,
+				PubKeyBytes: val.PublicKey.Key,
 				PubKeyType:  "", // TODO
 			})
 
@@ -82,7 +82,7 @@ func (app *App) ApplyValidatorRewardsPenalties(misbehavior []v1.Misbehavior, com
 
 			ret = append(ret, v1.ValidatorUpdate{
 				Power:       v.Validator.Power - 1,
-				PubKeyBytes: val.PublicKey.PK,
+				PubKeyBytes: val.PublicKey.Key,
 				PubKeyType:  "", // TODO
 			})
 
@@ -130,17 +130,17 @@ func (app *App) ApplyTransactions(txsRaw [][]byte) (*types.State, []*v1.ExecTxRe
 			return nil, nil, err
 		}
 
-		if bytes.Equal(tx.Signer, app.config.SystemTxSigner) { // system tx
+		if bytes.Equal(tx.Transaction.Address, app.config.SystemTxSigner) { // system tx
 			if err := app.ValidateSystemTransaction(tx); err != nil {
 				return nil, nil, err
 			}
 		} else { // user transaction
-			acc := app.State.AccountByAddress(tx.Signer)
+			acc := app.State.AccountByAddress(tx.Transaction.Address)
 			if acc == nil {
 				return nil, nil, fmt.Errorf("account not found")
 			}
 
-			if !common.VerifySignature(acc.Network, &tx.Transaction, tx.Signature, tx.Signer) {
+			if !common.VerifySignature(acc.Network, &tx.Transaction, tx.Signature, tx.Transaction.Address) {
 				return nil, nil, fmt.Errorf("invalid signature")
 			}
 		}

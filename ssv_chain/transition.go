@@ -19,7 +19,7 @@ type Receipt struct {
 }
 
 // ProcessTransactions processes and applies transactions on state, returns nil if valid
-// Transactions should be VALIDATED!! for signatures before being included
+// Transactions should be !!VALIDATED!! for signatures before being included
 func ProcessTransactions(
 	ctx *operations.Context,
 	s *types.State,

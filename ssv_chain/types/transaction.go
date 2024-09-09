@@ -39,6 +39,7 @@ type Operation struct {
 }
 
 type Transaction struct {
+	// Address sending the transaction
 	Address    []byte `ssz-max:"128"`
 	Nonce      uint64
 	MaxGas     uint64
@@ -49,6 +50,5 @@ type Transaction struct {
 type SignedTransaction struct {
 	Signature []byte `ssz-size:"1024"`
 	// Signer is the L1 account that signed the transaction
-	Signer      []byte `ssz-max:"128"`
 	Transaction Transaction
 }

@@ -8,7 +8,8 @@ import (
 	"ssv-experiments/ssv_chain/types"
 )
 
-type addOperatorV0 struct {
+// AddOperatorV0 operations will add a new operator for the sender of the transaction
+type AddOperatorV0 struct {
 	PublicKey *common.CryptoKey
 	ModuleID  uint64
 	Tiers     []*types.PriceTier `ssz-max:"16"`
@@ -17,7 +18,7 @@ type addOperatorV0 struct {
 func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 	switch op {
 	case types.OP_Add:
-		opObj := &addOperatorV0{}
+		opObj := &AddOperatorV0{}
 		if err := opObj.UnmarshalSSZ(raw); err != nil {
 			return err
 		}
