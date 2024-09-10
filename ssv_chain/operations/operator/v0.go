@@ -24,12 +24,9 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 		}
 
 		// calculate and consume gas
-		estimatedGas := uint64(gas.OperatorAdd + gas.PublicKeyStore)
-		estimatedGasCost := ctx.GasCost(estimatedGas)
-		if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
+		if err := gas.ConsumeGas(ctx, gas.OperatorAdd+gas.PublicKeyStore); err != nil {
 			return err
 		}
-		ctx.GasConsumed += estimatedGas
 
 		// Verify module exists, if not fail and consume gas
 		if ctx.State.ModuleByID(opObj.ModuleID) == nil {
@@ -37,7 +34,7 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 		}
 
 		// Validate price tiers, if not fail and consume gas
-		if err := validateV0PriceTiers(opObj.Tiers); err != nil {
+		if err := validateV0PriceTiers(ctx.Config, opObj.Tiers); err != nil {
 			return err
 		}
 
@@ -55,14 +52,14 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 	}
 }
 
-func validateV0PriceTiers(tiers []*types.PriceTier) error {
+func validateV0PriceTiers(ctx *types.Configure, tiers []*types.PriceTier) error {
 	if len(tiers) == 0 {
 		return fmt.Errorf("no price tiers")
 	}
 
 	for _, t := range tiers {
 		// Verify network exists, if not fail and consume gas
-		if !common.IsSupportedNetwork(t.Network) {
+		if !ctx.IsSupportedNetwork(t.Network) {
 			return fmt.Errorf("network not found")
 		}
 	}

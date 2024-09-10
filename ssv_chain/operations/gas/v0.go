@@ -6,30 +6,32 @@ import (
 )
 
 const (
-	ByteData       = common.OneHundredthSSV
-	OperatorAdd    = common.OneSSV
-	PublicKeyStore = common.TenthSSV * 5
-	ModuleAdd      = common.OneSSV * 5
+	ByteData       = common.VGBitOneHundredthSSV
+	OperatorAdd    = common.VGBitOneSSV
+	PublicKeyStore = common.VGBitTenthSSV * 5
+	ModuleAdd      = common.VGBitOneSSV * 5
 
 	// balance
-	DepositBalance  = common.TenthSSV * 5
-	WithdrawBalance = common.OneSSV
+	DepositBalance  = common.VGBitTenthSSV * 5
+	WithdrawBalance = common.VGBitOneSSV
 
 	// cluster
-	ClusterAdd            = common.OneSSV * 5
-	ClusterModify         = common.OneSSV * 5
-	ClusterInstanceAdd    = common.TenthSSV * 5
-	ClusterInstanceRemove = common.TenthSSV * 5
+	ClusterAdd            = common.VGBitOneSSV * 5
+	ClusterModify         = common.VGBitOneSSV * 5
+	ClusterInstanceAdd    = common.VGBitTenthSSV * 5
+	ClusterInstanceRemove = common.VGBitTenthSSV * 5
 
 	// staking
-	LockUnlockStake = common.TenthSSV * 5
-	DelegateStake   = common.TenthSSV * 5
+	LockUnlockStake = common.VGBitTenthSSV * 5
+	DelegateStake   = common.VGBitTenthSSV * 5
 
 	// validator
-	ValidatorAdd = common.OneSSV
+	ValidatorAdd = common.VGBitOneSSV
 )
 
 // ConsumeGas consumes SSV gas for account, returns error if failed (insufficient, etc.)
 func ConsumeGas(ctx *operations.Context, gas uint64) error {
-	panic("implement")
+	gasCost := ctx.GasCost(gas)
+	ctx.GasConsumed += gas
+	return ctx.Account.ReduceBalance(gasCost, ctx.Config.MainSSVTokenAddress, ctx.Config.MainSSVTokenNetwork)
 }

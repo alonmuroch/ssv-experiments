@@ -43,7 +43,7 @@ type Transaction struct {
 	Address    []byte `ssz-max:"128"`
 	Nonce      uint64
 	MaxGas     uint64
-	GasPrice   uint64
+	GasPrice   uint64       // in VGBit
 	Operations []*Operation `ssz-max:"128"`
 }
 

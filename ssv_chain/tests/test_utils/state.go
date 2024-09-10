@@ -28,7 +28,7 @@ func (backend *TestingBackend) BaseState() *types.State {
 					{
 						Network:      _to4Bytes(backend.SupportedNetworks[0]),
 						TokenAddress: backend.SSVTokenAddresses[0],
-						Amount:       common.OneSSV,
+						Amount:       1000 * common.VGBitOneSSV,
 					},
 				},
 			},

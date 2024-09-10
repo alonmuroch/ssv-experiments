@@ -20,13 +20,10 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 			return err
 		}
 
-		// calculate and consume gas
-		estimatedGas := uint64(gas.ValidatorAdd + gas.PublicKeyStore)
-		estimatedGasCost := ctx.GasCost(estimatedGas)
-		if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
+		// consume gas
+		if err := gas.ConsumeGas(ctx, gas.ValidatorAdd+gas.PublicKeyStore); err != nil {
 			return err
 		}
-		ctx.GasConsumed += estimatedGas
 
 		// update operators
 		ctx.State.Validators = append(ctx.State.Validators, &types.Validator{

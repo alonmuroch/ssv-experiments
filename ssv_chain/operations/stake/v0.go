@@ -26,13 +26,10 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 		}
 
 		for _, a := range opObj.Amounts {
-			// calculate and consume gas
-			estimatedGas := uint64(gas.LockUnlockStake)
-			estimatedGasCost := ctx.GasCost(estimatedGas)
-			if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
+			// consume gas
+			if err := gas.ConsumeGas(ctx, gas.LockUnlockStake); err != nil {
 				return err
 			}
-			ctx.GasConsumed += estimatedGas
 
 			if !ctx.Config.ValidSSVTokenAddress(a.Network, a.TokenAddress) {
 				continue
@@ -55,13 +52,10 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 			return err
 		}
 
-		// calculate and consume gas
-		estimatedGas := uint64(gas.DelegateStake)
-		estimatedGasCost := ctx.GasCost(estimatedGas)
-		if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
+		// consume gas
+		if err := gas.ConsumeGas(ctx, gas.DelegateStake); err != nil {
 			return err
 		}
-		ctx.GasConsumed += estimatedGas
 
 		// verify validator ID
 		val := ctx.State.ValidatorByID(opObj.ValidatorID)
@@ -70,7 +64,7 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 		}
 
 		// verify can delegate
-		b := ctx.Account.BalanceByTokenAddress(ctx.Config.MainSSVTokenAddress, ctx.Config.MainSSVTokenNetwork)
+		b := ctx.Account.GetBalance(ctx.Config.MainSSVTokenAddress, ctx.Config.MainSSVTokenNetwork)
 		if b == nil {
 			return fmt.Errorf("no SSV balance")
 		}

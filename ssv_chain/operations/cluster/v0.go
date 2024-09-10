@@ -34,12 +34,9 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 		}
 
 		// calculate and consume gas
-		estimatedGas := uint64(gas.ClusterAdd)
-		estimatedGasCost := ctx.GasCost(estimatedGas)
-		if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
+		if err := gas.ConsumeGas(ctx, gas.ClusterAdd); err != nil {
 			return err
 		}
-		ctx.GasConsumed += estimatedGas
 
 		// Verify module exists, if not fail and consume gas
 		if ctx.State.ModuleByID(opObj.ModuleID) == nil {
@@ -78,12 +75,9 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 		}
 
 		// calculate and consume gas
-		estimatedGas := uint64(gas.ClusterModify)
-		estimatedGasCost := ctx.GasCost(estimatedGas)
-		if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
+		if err := gas.ConsumeGas(ctx, gas.ClusterModify); err != nil {
 			return err
 		}
-		ctx.GasConsumed += estimatedGas
 
 		// Verify cluster exists, if not fail and consume gas
 		cluster := ctx.State.ClusterByID(opObj.ClusterID)
@@ -94,12 +88,9 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 		// remove instances
 		for _, inst := range opObj.InstancesToAdd {
 			// calculate and consume gas
-			estimatedGas = uint64(gas.ClusterInstanceRemove)
-			estimatedGasCost = ctx.GasCost(estimatedGas)
-			if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
+			if err := gas.ConsumeGas(ctx, gas.ClusterInstanceRemove); err != nil {
 				return err
 			}
-			ctx.GasConsumed += estimatedGas
 
 			// remove
 			removeClusterInstance(inst)
@@ -116,7 +107,7 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 }
 
 func estimateAddClusterInstanceGas(ci *types.ClusterInstance) uint64 {
-	return uint64(gas.ClusterInstanceAdd + len(ci.Metadata)*gas.ByteData)
+	return uint64(gas.ClusterInstanceAdd + uint64(len(ci.Metadata))*gas.ByteData)
 }
 
 // RemoveInstance removes cluster instance if found
@@ -131,12 +122,9 @@ func addInstancesToCluster(ctx *operations.Context, cluster *types.Cluster, inst
 		}
 
 		// update gas
-		estimatedGas := estimateAddClusterInstanceGas(inst)
-		estimatedGasCost := ctx.GasCost(estimatedGas)
-		if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
+		if err := gas.ConsumeGas(ctx, estimateAddClusterInstanceGas(inst)); err != nil {
 			return err
 		}
-		ctx.GasConsumed += estimatedGas
 
 		// validate and add to operator price tiers
 		for i, opIdx := range cluster.Operators {

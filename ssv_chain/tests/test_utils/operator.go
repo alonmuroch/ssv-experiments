@@ -21,14 +21,18 @@ func (backend *TestingBackend) AddOperatorOperation() []byte {
 		PublicKey: backend.OperatorKey1(),
 		ModuleID:  0,
 		Tiers: []*types.PriceTier{
-			{
-				Network:             _to4Bytes(backend.SupportedNetworks[0]),
-				Capacity:            500,
-				Price:               common.OneHundredthSSV,
-				PayableTokenAddress: backend.SSVTokenAddresses[0],
-			},
+			backend.SSVTokenOperatorPriceTier(),
 		},
 	}).MarshalSSZ()
 
 	return ret
+}
+
+func (backend *TestingBackend) SSVTokenOperatorPriceTier() *types.PriceTier {
+	return &types.PriceTier{
+		Network:             _to4Bytes(backend.SupportedNetworks[0]),
+		Capacity:            500,
+		Price:               common.VGBitOneHundredthSSV,
+		PayableTokenAddress: backend.SSVTokenAddresses[0],
+	}
 }

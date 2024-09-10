@@ -2,7 +2,6 @@ package module
 
 import (
 	"fmt"
-	"ssv-experiments/ssv_chain/common"
 	"ssv-experiments/ssv_chain/operations"
 	"ssv-experiments/ssv_chain/operations/gas"
 	"ssv-experiments/ssv_chain/types"
@@ -22,16 +21,13 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 			return err
 		}
 
-		// calculate and consume gas
-		estimatedGas := uint64(gas.ModuleAdd + gas.ByteData*len(opObj.Name))
-		estimatedGasCost := ctx.GasCost(estimatedGas)
-		if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
+		// consume gas
+		if err := gas.ConsumeGas(ctx, gas.ModuleAdd+gas.ByteData*uint64(len(opObj.Name))); err != nil {
 			return err
 		}
-		ctx.GasConsumed += estimatedGas
 
 		// Verify network exists, if not fail and consume gas
-		if !common.IsSupportedNetwork(opObj.Network) {
+		if !ctx.Config.IsSupportedNetwork(opObj.Network) {
 			return fmt.Errorf("network not found")
 		}
 

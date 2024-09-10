@@ -39,7 +39,7 @@ func (v *Validator) Slash(state *State, config *Configure) error {
 		return fmt.Errorf("account not found")
 	}
 
-	b := acc.BalanceByTokenAddress(config.MainSSVTokenAddress, config.MainSSVTokenNetwork)
+	b := acc.GetBalance(config.MainSSVTokenAddress, config.MainSSVTokenNetwork)
 	if b == nil {
 		return fmt.Errorf("balance not found")
 	}

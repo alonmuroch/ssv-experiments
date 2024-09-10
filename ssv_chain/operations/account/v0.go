@@ -34,19 +34,14 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 			ctx.Account = ctx.State.CreateAccountForAddress(opObj.Address)
 		}
 
-		// calculate and consume gas
-		estimatedGas := uint64(gas.DepositBalance)
-		estimatedGasCost := ctx.GasCost(estimatedGas)
 		// add balances
 		for _, b := range opObj.Balances {
 			// consume gas
-			if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
-				ctx.GasConsumed += estimatedGas
+			if err := gas.ConsumeGas(ctx, gas.DepositBalance); err != nil {
 				// roll back adding balance
 				ctx.Account.ReduceBalance(b.Amount, b.TokenAddress, b.Network)
 				return err
 			}
-			ctx.GasConsumed += estimatedGas
 
 			if !bytes.Equal(b.Network[:], ctx.Account.Network[:]) {
 				return fmt.Errorf("not account network")
@@ -61,15 +56,10 @@ func processV0Operation(ctx *operations.Context, op byte, raw []byte) error {
 			return err
 		}
 
-		// calculate and consume gas
-		estimatedGas := uint64(gas.WithdrawBalance * len(opObj.Balances))
-		estimatedGasCost := ctx.GasCost(estimatedGas)
-
 		// consume gas
-		if err := gas.ConsumeGas(ctx, estimatedGasCost); err != nil {
+		if err := gas.ConsumeGas(ctx, gas.WithdrawBalance*uint64(len(opObj.Balances))); err != nil {
 			return err
 		}
-		ctx.GasConsumed += estimatedGas
 
 		for _, b := range opObj.Balances {
 			// reduce balance

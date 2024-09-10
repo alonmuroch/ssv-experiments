@@ -1,5 +1,10 @@
 package types
 
+import (
+	"bytes"
+	"fmt"
+)
+
 type Account struct {
 	// Network on which the account exists
 	Network [4]byte `ssz-size:"4"`
@@ -11,9 +16,14 @@ type Account struct {
 	Balances []*Balance `ssz-max:"128"`
 }
 
-// BalanceByTokenAddress returns balance by token address or nil if not found
-func (account *Account) BalanceByTokenAddress(address []byte, network [4]byte) *Balance {
-	panic("implement")
+// GetBalance returns balance by token address or nil if not found
+func (account *Account) GetBalance(address []byte, network [4]byte) *Balance {
+	for _, b := range account.Balances {
+		if bytes.Equal(b.Network[:], network[:]) && bytes.Equal(b.TokenAddress, address) {
+			return b
+		}
+	}
+	return nil
 }
 
 // SufficientBalance returns true if balance sufficient (bigger) for token
@@ -23,7 +33,16 @@ func (account *Account) SufficientBalance(balance uint64, tokenAddress []byte, n
 
 // ReduceBalance reduces balance for token, if balance available and not locked. Returns error if not sufficient balance
 func (account *Account) ReduceBalance(balance uint64, tokenAddress []byte, network [4]byte) error {
-	panic("implement")
+	b := account.GetBalance(tokenAddress, network)
+	if b == nil {
+		return fmt.Errorf("balance not found")
+	}
+
+	if b.Amount < balance {
+		return fmt.Errorf("insufficient balance")
+	}
+	b.Amount -= balance
+	return nil
 }
 
 // LockBalance locks balance for token, if balanceToLock <= (balance - locked)

@@ -7,5 +7,7 @@ func (backend *TestingBackend) Config() *types.Configure {
 		SupportedNetworks:        backend.SupportedNetworks,
 		SystemTxSigner:           TestingSystemSigner,
 		SSVTokenAddressByNetwork: backend.SSVTokenAddresses,
+		MainSSVTokenAddress:      backend.SSVTokenAddresses[0],
+		MainSSVTokenNetwork:      _to4Bytes(backend.SupportedNetworks[0]),
 	}
 }
